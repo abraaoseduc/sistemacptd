@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema para Cálculo de Valores Rescisórios – CPTD</title>
+    <!-- Biblioteca SheetJS para Leitura e Exportação de Planilhas Excel -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --primary: #16a34a;
+            --primary-hover: #15803d;
+            --bg: #f0fdf4;
+            --card-bg: #ffffff;
+            --text-main: #14532d;
+            --text-muted: #4ade80;
+            --text-dark: #1f2937;
+            --text-gray: #4b5563;
+            --border: #bbf7d0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-dark);
+            padding: 2rem 1rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .header-logo {
+            max-width: 100%;
+            height: auto;
+            max-height: 250px;
+            object-fit: contain;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+        }
+
+        .top-actions {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .btn-back-home, .btn-reopen-input {
+            background-color: #64748b;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border-radius: 4px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            text-decoration: none;
+        }
+
+        .btn-back-home:hover, .btn-reopen-input:hover {
+            background-color: #475569;
+        }
+
+        .drop-zone {
+            border: 2px dashed var(--primary);
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+            background-color: #f8fafc;
+            color: var(--text-gray);
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s;
+            margin-bottom: 1rem;
+        }
+
+        .drop-zone.dragover {
+            background-color: #dcfce7;
+            border-color: var(--primary-hover);
+            color: var(--text-main);
+        }
+
+        .drop-zone p {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .drop-zone span {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        .instructions-box {
+            background-color: #fefce8;
+            border: 1px solid #fef08a;
+            border-left: 5px solid #eab308;
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            font-size: 0.88rem;
+            color: #713f12;
+            line-height: 1.6;
+        }
+
+        .instructions-box strong {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+        }
+
+        .input-section {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+        }
+
+        textarea {
+            width: 100%;
+            height: 120px;
+            padding: 1rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            resize: vertical;
+            font-family: monospace;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            outline: none;
+        }
+
+        textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.2);
+        }
+
+        .btn-process {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            width: 100%;
+        }
+
+        .btn-process:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .results-section {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .card-header {
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 0.75rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .card-header h2 {
+            font-size: 1.3rem;
+            color: var(--text-main);
+        }
+
+        .card-header .matricula {
+            font-size: 0.9rem;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .card-body {
+            display: grid;
+            grid-template-columns: minmax(280px, 340px) 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 900px) {
+            .card-body {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .left-column, .right-column {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .right-column {
+            background-color: #fafafa;
+            border: 1px dashed var(--border);
+            border-radius: 6px;
+            padding: 1.25rem;
+        }
+
+        .right-column-title {
+            font-size: 1rem;
+            font-weight: bold;
+            color: var(--text-main);
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .info-group {
+            margin-bottom: 0.5rem;
+        }
+
+        .info-group label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-gray);
+            display: block;
+            margin-bottom: 0.15rem;
+        }
+
+        .info-group span {
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+
+        .info-group span.text-sim {
+            color: #dc2626 !important;
+            font-weight: 700 !important;
+        }
+
+        .info-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        .badge-block {
+            background-color: #f0fdf4;
+            border: 1px solid #dcfce7;
+            padding: 0.75rem;
+            border-radius: 6px;
+        }
+
+        .badge-block strong {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+            border-bottom: 1px dashed var(--border);
+            padding-bottom: 0.25rem;
+        }
+
+        .rubricas-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            margin-top: 0.5rem;
+        }
+
+        .rubrica-item {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            color: var(--text-dark);
+        }
+
+        .rubrica-item input[type="checkbox"] {
+            accent-color: var(--primary);
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .rubrica-aviso {
+            font-size: 0.75rem;
+            color: #b91c1c;
+            background-color: #fef2f2;
+            border: 1px solid #fecaca;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-weight: 600;
+            display: block;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: var(--text-gray);
+            padding: 3rem;
+        }
+
+        .base-info-box {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.85rem;
+            margin-bottom: 0.75rem;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .calc-card-item {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-left: 4px solid var(--primary);
+            border-radius: 6px;
+            padding: 1rem;
+            margin-top: 0.75rem;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+        }
+
+        .calc-card-item h4 {
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .calc-details {
+            font-size: 0.85rem;
+            color: var(--text-dark);
+            line-height: 1.5;
+            margin-bottom: 0.75rem;
+            background-color: #f8fafc;
+            padding: 0.6rem;
+            border-radius: 4px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .copy-box-container {
+            background-color: #f0fdf4;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.75rem;
+            margin-top: 0.5rem;
+        }
+
+        .copy-box-text {
+            font-size: 0.82rem;
+            color: #166534;
+            font-weight: 600;
+            word-break: break-word;
+            margin-bottom: 0.5rem;
+            line-height: 1.4;
+            background: #ffffff;
+            padding: 0.5rem;
+            border: 1px solid #bbf7d0;
+            border-radius: 4px;
+            outline: none;
+            transition: border-color 0.2s, background-color 0.2s;
+        }
+
+        .copy-box-text[contenteditable="true"] {
+            background-color: #fffde7;
+            border-color: #f59e0b;
+            color: #78350f;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .btn-copy {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.35rem 0.75rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .btn-copy:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .print-section {
+            margin-top: 2rem;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-print {
+            background-color: #1e293b;
+            color: #ffffff;
+            border: none;
+            padding: 0.85rem 2rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-print:hover {
+            background-color: #0f172a;
+        }
+
+        .error-msg {
+            font-size: 0.85rem;
+            color: #dc2626;
+            background-color: #fef2f2;
+            border: 1px solid #fecaca;
+            padding: 0.5rem;
+            border-radius: 4px;
+            margin-top: 0.5rem;
+        }
+
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 1.5cm 1cm;
+            }
+
+            body {
+                background: #ffffff !important;
+                color: #000000 !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                font-size: 10pt;
+            }
+
+            header {
+                margin-bottom: 1rem !important;
+                border-bottom: 2px solid #14532d;
+                padding-bottom: 0.5rem;
+            }
+
+            .header-logo {
+                max-height: 80px !important;
+                margin-bottom: 0.5rem;
+            }
+
+            header h1 {
+                font-size: 1.2rem !important;
+                color: #14532d !important;
+            }
+
+            .top-actions, .input-section, .print-section, .btn-copy, .rubricas-container, .badge-block:has(.rubricas-container), .lancamento-selector, .folha-selector, .diferencas-selector {
+                display: none !important;
+            }
+
+            .results-section {
+                display: block !important;
+            }
+
+            .card {
+                border: none !important;
+                padding: 0 !important;
+                margin-bottom: 0 !important;
+                box-shadow: none !important;
+                page-break-after: always;
+                break-after: page;
+            }
+
+            .card-header {
+                border-bottom: 1px solid #000 !important;
+                margin-bottom: 0.75rem !important;
+                padding-bottom: 0.25rem !important;
+            }
+
+            .card-header h2 {
+                font-size: 1.1rem !important;
+                color: #000 !important;
+            }
+
+            .card-header .matricula {
+                font-size: 0.9rem !important;
+                color: #000 !important;
+            }
+
+            .card-body {
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 1rem !important;
+            }
+
+            .left-column {
+                display: grid !important;
+                grid-template-columns: repeat(3, 1fr) !important;
+                gap: 0.5rem !important;
+                border: 1px solid #cbd5e1;
+                padding: 0.75rem;
+                border-radius: 4px;
+                background-color: #f8fafc !important;
+            }
+
+            .badge-block {
+                border: none !important;
+                background: transparent !important;
+                padding: 0 !important;
+            }
+
+            .badge-block strong {
+                font-size: 0.75rem !important;
+                border-bottom: 1px solid #94a3b8 !important;
+                color: #000 !important;
+                margin-bottom: 0.25rem !important;
+            }
+
+            .info-group label {
+                font-size: 0.65rem !important;
+                color: #475569 !important;
+            }
+
+            .info-group span {
+                font-size: 0.8rem !important;
+                color: #000 !important;
+            }
+
+            .right-column {
+                background: transparent !important;
+                border: none !important;
+                padding: 0 !important;
+            }
+
+            .right-column-title {
+                font-size: 0.95rem !important;
+                color: #000 !important;
+                border-bottom: 1px solid #000 !important;
+                margin-bottom: 0.75rem !important;
+            }
+
+            .base-info-box {
+                border: 1px solid #94a3b8 !important;
+                background: #f1f5f9 !important;
+                font-size: 0.85rem !important;
+                padding: 0.5rem !important;
+            }
+
+            .calc-card-item {
+                border: 1px solid #cbd5e1 !important;
+                border-left: 3px solid #16a34a !important;
+                margin-top: 0.5rem !important;
+                padding: 0.5rem !important;
+                box-shadow: none !important;
+                page-break-inside: avoid;
+            }
+
+            .calc-card-item h4 {
+                font-size: 0.85rem !important;
+            }
+
+            .calc-details {
+                background: #ffffff !important;
+                border: 1px solid #e2e8f0 !important;
+                font-size: 0.8rem !important;
+                padding: 0.4rem !important;
+            }
+
+            .copy-box-container {
+                background: #f8fafc !important;
+                border: 1px solid #cbd5e1 !important;
+                padding: 0.5rem !important;
+            }
+
+            .copy-box-text {
+                font-size: 0.75rem !important;
+                border: none !important;
+                padding: 0 !important;
+                color: #000 !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <img src="logo.jpg" alt="Logo CPTD" class="header-logo">
+        <h1>Sistema para Cálculo de Valores Rescisórios – CPTD</h1>
+    </header>
+
+    <div class="top-actions">
+        <a href="index.html" class="btn-back-home">← Voltar ao Menu Principal</a>
+        <button id="btnReopenInput" class="btn-reopen-input" onclick="reexibirEntrada()" style="display: none;">📥 Carregar Nova Planilha / Texto</button>
+    </div>
+
+    <!-- Área de Entrada de Dados -->
+    <section class="input-section" id="inputSection">
+        <div class="instructions-box">
+            <strong>INSTRUÇÃO PARA PREENCHIMENTO:</strong>
+            <div>NO SISTEMA DO SIGE-CT, NA ABA “PAGAMENTO” E “ALTERAÇÕES DE CONTRATOS”, SELECIONE A OPÇÃO EXCEL EM “EXTENSÃO RELATÓRIO”.</div>
+            <div>CLIQUE EM “LISTAR” E DEPOIS EM “EXPORTAR EXCEL”.</div>
+            <div>APÓS BAIXAR A PLANILHA, ARRASTE O ARQUIVO ABAIXO OU COPIE A LINHA COMPLETA DO SERVIDOR NA CAIXA DE TEXTO:</div>
+        </div>
+
+        <!-- Área de Upload por Drag & Drop / Clique -->
+        <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+            <p>📄 Arraste e solte o arquivo da planilha aqui, ou clique para selecionar</p>
+            <span>Formatos suportados: .xlsx, .xls, .csv</span>
+            <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" style="display: none;" onchange="manipularArquivo(this.files)">
+        </div>
+
+        <textarea id="inputData" placeholder="Cole aqui as linhas da planilha (com ou sem cabeçalho)..."></textarea>
+        <button class="btn-process" onclick="processarDados()">Processar Informações</button>
+    </section>
+
+    <main class="results-section" id="resultsContainer">
+        <div class="empty-state">Nenhum dado processado ainda. Envie a planilha ou cole as informações acima e clique em "Processar Informações".</div>
+    </main>
+
+    <div class="print-section" id="printSection" style="display: none;">
+        <button class="btn-print" onclick="window.print()">
+            🖨️ GERAR PDF PARA IMPRESSÃO
+        </button>
+        <button class="btn-print" style="background-color: #0284c7;" onclick="gerarRelatorioFinal()">
+            📊 GERAR RELATÓRIO FINAL
+        </button>
+    </div>
+
+    <!-- Importação da tabela central de valores -->
+    <script src="rubricas/tabela.js"></script>
+
+    <!-- Importação das rubricas externas -->
+    <script src="rubricas/3158.js"></script>
+    <script src="rubricas/321.js"></script>
+    <script src="rubricas/476.js"></script>
+    <script src="rubricas/660.js"></script>
+    <script src="rubricas/619-412.js"></script>
+
+    <script>
+        window.estadoTiposLancamento = {};
+        window.estadoBloqueioFolha = {};
+        window.estadoDiferencas321_476 = {};
+
+        /* --- DRAG & DROP E CARREGAMENTO DE ARQUIVOS --- */
+        const dropZone = document.getElementById('dropZone');
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+            document.body.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.add('dragover'), false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.remove('dragover'), false);
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            manipularArquivo(files);
+        });
+
+        function manipularArquivo(files) {
+            if (!files || files.length === 0) return;
+            const file = files[0];
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+
+                const tsvText = XLSX.utils.sheet_to_csv(worksheet, { FS: "\t" });
+                document.getElementById('inputData').value = tsvText;
+            };
+
+            reader.readAsArrayBuffer(file);
+        }
+
+        function reexibirEntrada() {
+            document.getElementById('inputSection').style.display = 'block';
+            document.getElementById('btnReopenInput').style.display = 'none';
+        }
+
+        /* --- FUNÇÕES AUXILIARES DE CÁLCULO E FORMATO --- */
+        function formatarMoeda(val) {
+            return val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        function tratarMatricula(val) {
+            if (!val) return '';
+            let limpo = val.trim();
+            if (limpo.startsWith('222001')) {
+                return limpo.substring(6);
+            }
+            return limpo;
+        }
+
+        function formatarTipoContrato(val) {
+            if (!val) return '-';
+            const v = val.trim().toUpperCase();
+            if (v === 'I') return 'INICIAL';
+            if (v === 'P') return '<span style="color: #dc2626; font-weight: 700;">PRORROGAÇÃO</span>';
+            return val;
+        }
+
+        function formatarOcorrencia(val) {
+            if (!val) return { texto: 'Não', classe: '' };
+            const v = val.trim().toUpperCase();
+            if (v === 'S' || v === 'SIM') {
+                return { texto: 'Sim', classe: 'text-sim' };
+            }
+            return { texto: 'Não', classe: '' };
+        }
+
+        function parseDataBR(dataStr) {
+            if (!dataStr) return null;
+            const partes = dataStr.trim().split('/');
+            if (partes.length !== 3) return null;
+            const dia = parseInt(partes[0], 10);
+            const mes = parseInt(partes[1], 10) - 1;
+            const ano = parseInt(partes[2], 10);
+            return new Date(ano, mes, dia);
+        }
+
+        function calcularMesesTrabalhados(dtIniStr, dtAltStr) {
+            const dIni = parseDataBR(dtIniStr);
+            const dAlt = parseDataBR(dtAltStr);
+
+            if (!dIni || !dAlt || dAlt < dIni) return 0;
+
+            let mesesContados = 0;
+            let anoAtual = dIni.getFullYear();
+            let mesAtual = dIni.getMonth();
+
+            const anoFim = dAlt.getFullYear();
+            const mesFim = dAlt.getMonth();
+
+            while (anoAtual < anoFim || (anoAtual === anoFim && mesAtual <= mesFim)) {
+                let inicioDoMes = new Date(anoAtual, mesAtual, 1);
+                let fimDoMes = new Date(anoAtual, mesAtual + 1, 0);
+
+                let inicioEfetivo = (anoAtual === dIni.getFullYear() && mesAtual === dIni.getMonth()) ? dIni : inicioDoMes;
+                let fimEfetivo = (anoAtual === anoFim && mesAtual === mesFim) ? dAlt : fimDoMes;
+
+                let diffTempo = fimEfetivo.getTime() - inicioEfetivo.getTime();
+                let diasNoMes = Math.floor(diffTempo / (1000 * 3600 * 24)) + 1;
+
+                if (diasNoMes >= 15) {
+                    mesesContados++;
+                }
+
+                mesAtual++;
+                if (mesAtual > 11) {
+                    mesAtual = 0;
+                    anoAtual++;
+                }
+            }
+
+            return mesesContados;
+        }
+
+        function copiarTexto(elementId) {
+            const el = document.getElementById(elementId);
+            const textToCopy = el.innerText;
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                alert("Texto copiado com sucesso!");
+            }).catch(err => {
+                console.error("Erro ao copiar texto: ", err);
+            });
+        }
+
+        function habilitarEdicaoCalculo(elementId) {
+            const el = document.getElementById(elementId);
+            const btn = document.getElementById(`btn_edit_${elementId}`);
+            
+            if (el.contentEditable === "true") {
+                el.contentEditable = "false";
+                btn.innerHTML = "✏️ Editar Cálculos";
+                btn.style.backgroundColor = "#d97706";
+            } else {
+                el.contentEditable = "true";
+                el.focus();
+                btn.innerHTML = "💾 Concluir Edição";
+                btn.style.backgroundColor = "#16a34a";
+            }
+        }
+
+        function recalcularRubricaEspecifica(cardId, rubrica, novoTipo) {
+            if (!window.estadoTiposLancamento[cardId]) {
+                window.estadoTiposLancamento[cardId] = {};
+            }
+            window.estadoTiposLancamento[cardId][rubrica] = novoTipo;
+
+            const card = document.getElementById(cardId);
+            if (card && card.dataset.json) {
+                atualizarCalculos(card.dataset.json);
+            }
+        }
+
+        function atualizarBloqueioFolha(cardId, rubrica) {
+            if (!window.estadoBloqueioFolha[cardId]) {
+                window.estadoBloqueioFolha[cardId] = {};
+            }
+
+            const chk = document.getElementById(`chk_bloqueio_${rubrica}_${cardId}`);
+            const inputNum = document.getElementById(`num_folha_${rubrica}_${cardId}`);
+
+            window.estadoBloqueioFolha[cardId][rubrica] = {
+                bloqueado: chk ? chk.checked : false,
+                numFolha: inputNum ? inputNum.value : ''
+            };
+
+            const card = document.getElementById(cardId);
+            if (card && card.dataset.json) {
+                atualizarCalculos(card.dataset.json);
+            }
+        }
+
+        function atualizarDiferencas321_476(cardId, rubrica) {
+            if (!window.estadoDiferencas321_476[cardId]) {
+                window.estadoDiferencas321_476[cardId] = {};
+            }
+
+            const chk = document.getElementById(`chk_diferencas_${rubrica}_${cardId}`);
+            window.estadoDiferencas321_476[cardId][rubrica] = chk ? chk.checked : false;
+
+            const card = document.getElementById(cardId);
+            if (card && card.dataset.json) {
+                atualizarCalculos(card.dataset.json);
+            }
+        }
+
+        function atualizarCalculos(cardDataJson) {
+            const data = JSON.parse(decodeURIComponent(cardDataJson));
+            const card = document.getElementById(data.cardId);
+            if (!card) return;
+
+            const checkboxes = card.querySelectorAll('.rubricas-container input[type="checkbox"]:checked');
+            const selecionadas = Array.from(checkboxes).map(cb => cb.value);
+            const targetDiv = card.querySelector('.calc-output');
+
+            if (selecionadas.length === 0) {
+                targetDiv.innerHTML = '<div style="color: var(--text-gray); font-size: 0.85rem; font-style: italic;">Selecione as verbas rescisórias ao lado para visualizar os cálculos correspondentes.</div>';
+                return;
+            }
+
+            const siglaUpper = data.sigla.toUpperCase();
+            const eK081ouK082 = siglaUpper.includes('K081') || siglaUpper.includes('K082');
+            const eK084ouK085 = siglaUpper.includes('K084') || siglaUpper.includes('K085');
+
+            let valorRemuneracao = 0;
+            let valorPVR = 0;
+            let valorVencimento = 0;
+            let textoPVRDisplay = '';
+
+            if (eK081ouK082 && typeof TABELA_K081_K082 !== 'undefined') {
+                const info = TABELA_K081_K082[data.chNum];
+                if (info) {
+                    valorRemuneracao = info.remuneracao;
+                    valorPVR = info.pvr;
+                    valorVencimento = info.somatorio;
+                    textoPVRDisplay = formatarMoeda(valorPVR);
+                }
+            } else if (eK084ouK085 && typeof TABELA_K084_K085 !== 'undefined') {
+                const info = TABELA_K084_K085[data.chNum];
+                if (info) {
+                    valorRemuneracao = info.remuneracao;
+                    valorPVR = 0;
+                    valorVencimento = info.remuneracao;
+                    textoPVRDisplay = `Sem PVR (${siglaUpper})`;
+                }
+            }
+
+            let htmlCalculo = `<div class="base-info-box">`;
+            htmlCalculo += `<strong>Base de Cálculo (“${siglaUpper}” – “${data.chNum}h”/semanais):</strong><br>`;
+            htmlCalculo += `• <strong>Remuneração:</strong> ${formatarMoeda(valorRemuneracao)}<br>`;
+            htmlCalculo += `• <strong>PVR:</strong> ${textoPVRDisplay}<br>`;
+            htmlCalculo += `• <strong>VENCIMENTO:</strong> <strong>${formatarMoeda(valorVencimento)}</strong>`;
+            htmlCalculo += `</div>`;
+
+            selecionadas.forEach((rubrica) => {
+                const tipoSalvo = (window.estadoTiposLancamento[data.cardId] && window.estadoTiposLancamento[data.cardId][rubrica]) || 'INCLUSÃO';
+                const bloqInfo = (window.estadoBloqueioFolha[data.cardId] && window.estadoBloqueioFolha[data.cardId][rubrica]) || { bloqueado: false, numFolha: '' };
+                const difSalva = (window.estadoDiferencas321_476[data.cardId] && window.estadoDiferencas321_476[data.cardId][rubrica]) || false;
+
+                if (rubrica === '3158') {
+                    if (typeof gerarCalculo3158 === 'function') {
+                        htmlCalculo += gerarCalculo3158(data, valorVencimento);
+                    } else {
+                        htmlCalculo += `<div class="error-msg">Erro: Arquivo rubricas/3158.js não carregado.</div>`;
+                    }
+                } else if (rubrica === '321') {
+                    if (typeof gerarCalculo321 === 'function') {
+                        htmlCalculo += gerarCalculo321(data, valorRemuneracao, tipoSalvo, bloqInfo.bloqueado, bloqInfo.numFolha, difSalva);
+                    } else {
+                        htmlCalculo += `<div class="error-msg">Erro: Arquivo rubricas/321.js não carregado.</div>`;
+                    }
+                } else if (rubrica === '476') {
+                    if (typeof gerarCalculo476 === 'function') {
+                        htmlCalculo += gerarCalculo476(data, valorPVR, tipoSalvo, bloqInfo.bloqueado, bloqInfo.numFolha, difSalva);
+                    } else {
+                        htmlCalculo += `<div class="error-msg">Erro: Arquivo rubricas/476.js não carregado.</div>`;
+                    }
+                } else if (rubrica === '660') {
+                    if (typeof gerarCalculo660 === 'function') {
+                        htmlCalculo += gerarCalculo660(data, valorRemuneracao, valorPVR, tipoSalvo, bloqInfo.bloqueado, bloqInfo.numFolha);
+                    } else {
+                        htmlCalculo += `<div class="error-msg">Erro: Arquivo rubricas/660.js não carregado.</div>`;
+                    }
+                } else if (rubrica === 'vale') {
+                    if (typeof gerarCalculoValeAlimentacao === 'function') {
+                        htmlCalculo += gerarCalculoValeAlimentacao(data);
+                    } else {
+                        htmlCalculo += `<div class="error-msg">Erro: Arquivo rubricas/619-412.js não carregado.</div>`;
+                    }
+                } else {
+                    htmlCalculo += `
+                        <div class="calc-card-item">
+                            <h4>RUBRICA ${rubrica}</h4>
+                            <div class="calc-details">Cálculo em desenvolvimento para a rubrica ${rubrica}.</div>
+                        </div>
+                    `;
+                }
+            });
+
+            targetDiv.innerHTML = htmlCalculo;
+        }
+
+        function processarDados() {
+            const rawText = document.getElementById('inputData').value;
+            const container = document.getElementById('resultsContainer');
+            const printSection = document.getElementById('printSection');
+            const inputSection = document.getElementById('inputSection');
+            const btnReopenInput = document.getElementById('btnReopenInput');
+
+            container.innerHTML = '';
+
+            if (!rawText.trim()) {
+                container.innerHTML = '<div class="empty-state">Por favor, insira algum texto ou envie uma planilha para processar.</div>';
+                printSection.style.display = 'none';
+                return;
+            }
+
+            const lines = rawText.split('\n').filter(line => line.trim() !== '');
+            let cardsCount = 0;
+
+            lines.forEach((line, index) => {
+                const cols = line.split('\t').map(c => c.trim());
+
+                if (cols[0] && cols[0].toUpperCase() === 'CREDE' && cols[2] && cols[2].toUpperCase() === 'MATRICULA') {
+                    return;
+                }
+
+                if (cols.length < 5) {
+                    return;
+                }
+
+                cardsCount++;
+                const cardId = `card_${index}`;
+
+                const cardDataObject = {
+                    cardId: cardId,
+                    matricula: tratarMatricula(cols[2] || ''),
+                    nome: cols[3] || '-',
+                    tipo: cols[4] || '',
+                    chNum: parseInt(cols[5] || '0', 10),
+                    dtini: cols[6] || '-',
+                    dtfim: cols[7] || '-',
+                    sigla: cols[8] || '-',
+                    dtpubl: cols[10] || '-',
+                    pagdoe: cols[11] || '-',
+                    caddoe: cols[12] || '-',
+                    dtinialt: cols[19] || '-',
+                    dtalt: cols[20] || '-',
+                    tipoalt: cols[21] || '-',
+                    temfalt: cols[25] || '',
+                    temlic: cols[26] || '',
+                    temreducao: cols[29] || ''
+                };
+
+                const jsonEncoded = encodeURIComponent(JSON.stringify(cardDataObject));
+
+                const chTexto = cardDataObject.chNum ? `${cardDataObject.chNum} Horas` : '-';
+                const siglaUpper = cardDataObject.sigla.toUpperCase();
+                const isK084ouK085 = siglaUpper.includes('K084') || siglaUpper.includes('K085');
+
+                let htmlRubrica476 = '';
+                if (isK084ouK085) {
+                    const tipoDetectado = siglaUpper.includes('K084') ? 'K084' : 'K085';
+                    htmlRubrica476 = `<span class="rubrica-aviso">${tipoDetectado} (Sem 476 - DIFERENÇA DE PVR)</span>`;
+                } else {
+                    htmlRubrica476 = `<label class="rubrica-item"><input type="checkbox" value="476" onchange="atualizarCalculos('${jsonEncoded}')"> 476 - DIFERENÇA DE PVR</label>`;
+                }
+
+                const faltasObj = formatarOcorrencia(cardDataObject.temfalt);
+                const licencaObj = formatarOcorrencia(cardDataObject.temlic);
+                const reducaoObj = formatarOcorrencia(cardDataObject.temreducao);
+
+                // Checagem se o arquivo inserido é de REDUÇÃO estando na página de RESCISÃO
+                const tipoAltUpper = cardDataObject.tipoalt.toUpperCase();
+                const isTipoIncorreto = tipoAltUpper.includes("REDUÇÃO") || tipoAltUpper.includes("REDUCAO");
+                const classeTipoAlt = isTipoIncorreto ? 'text-sim' : '';
+
+                const cardHTML = `
+                    <div class="card" id="${cardId}" data-json="${jsonEncoded}">
+                        <div class="card-header">
+                            <h2>${cardDataObject.nome}</h2>
+                            <div class="matricula">MATRÍCULA: ${cardDataObject.matricula}</div>
+                        </div>
+
+                        <div class="card-body">
+                            <div class="left-column">
+                                <div class="info-group">
+                                    <label>Tipo de Contrato</label>
+                                    <span>${formatarTipoContrato(cardDataObject.tipo)}</span>
+                                </div>
+
+                                <div class="info-group">
+                                    <label>Vigência</label>
+                                    <span>${cardDataObject.dtini} a ${cardDataObject.dtfim}</span>
+                                </div>
+
+                                <div class="info-grid-2">
+                                    <div class="info-group">
+                                        <label>Sigla / Tabela</label>
+                                        <span>${cardDataObject.sigla}</span>
+                                    </div>
+                                    <div class="info-group">
+                                        <label>Carga Horária</label>
+                                        <span>${chTexto}</span>
+                                    </div>
+                                </div>
+
+                                <div class="badge-block">
+                                    <strong>DOE (Diário Oficial)</strong>
+                                    <div class="info-group">
+                                        <label>Data</label>
+                                        <span>${cardDataObject.dtpubl}</span>
+                                    </div>
+                                    <div class="info-group">
+                                        <label>Página</label>
+                                        <span>${cardDataObject.pagdoe}</span>
+                                    </div>
+                                    <div class="info-group" style="margin-bottom:0;">
+                                        <label>Caderno</label>
+                                        <span>${cardDataObject.caddoe}</span>
+                                    </div>
+                                </div>
+
+                                <div class="badge-block">
+                                    <strong>SIGE-CT</strong>
+                                    <div class="info-group">
+                                        <label>Data Inicial do Contrato</label>
+                                        <span>${cardDataObject.dtinialt}</span>
+                                    </div>
+                                    <div class="info-group">
+                                        <label>Data de Alteração do Contrato</label>
+                                        <span>${cardDataObject.dtalt}</span>
+                                    </div>
+                                    <div class="info-group" style="margin-bottom:0;">
+                                        <label>Tipo Alteração</label>
+                                        <span class="${classeTipoAlt}">${cardDataObject.tipoalt}</span>
+                                    </div>
+                                </div>
+
+                                <div class="badge-block">
+                                    <strong>OCORRÊNCIAS</strong>
+                                    <div class="info-group">
+                                        <label>Faltas</label>
+                                        <span class="${faltasObj.classe}">${faltasObj.texto}</span>
+                                    </div>
+                                    <div class="info-group">
+                                        <label>Licença</label>
+                                        <span class="${licencaObj.classe}">${licencaObj.texto}</span>
+                                    </div>
+                                    <div class="info-group" style="margin-bottom:0;">
+                                        <label>Redução</label>
+                                        <span class="${reducaoObj.classe}">${reducaoObj.texto}</span>
+                                    </div>
+                                </div>
+
+                                <div class="badge-block">
+                                    <strong>VERBAS RESCISÓRIAS</strong>
+                                    <div class="rubricas-container">
+                                        <label class="rubrica-item"><input type="checkbox" value="3158" onchange="atualizarCalculos('${jsonEncoded}')"> 3158 - DÉCIMO TERCEIRO</label>
+                                        <label class="rubrica-item"><input type="checkbox" value="321" onchange="atualizarCalculos('${jsonEncoded}')"> 321 - DIFERENÇA DE REMUNERAÇÃO</label>
+                                        ${htmlRubrica476}
+                                        <label class="rubrica-item"><input type="checkbox" value="660" onchange="atualizarCalculos('${jsonEncoded}')"> 660 - DESPESA ANULAR</label>
+                                        <label class="rubrica-item"><input type="checkbox" value="vale" onchange="atualizarCalculos('${jsonEncoded}')"> VALE ALIMENTAÇÃO</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="right-column">
+                                <div class="right-column-title">DEMONSTRATIVO DE CÁLCULOS</div>
+                                <div class="calc-output">
+                                    <div style="color: var(--text-gray); font-size: 0.85rem; font-style: italic;">
+                                        Selecione as verbas rescisórias ao lado para visualizar os cálculos correspondentes.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                container.innerHTML += cardHTML;
+            });
+
+            if (cardsCount > 0) {
+                printSection.style.display = 'flex';
+                inputSection.style.display = 'none';
+                btnReopenInput.style.display = 'inline-flex';
+            } else {
+                container.innerHTML = '<div class="empty-state">Nenhum registro válido foi encontrado no texto/planilha fornecido.</div>';
+                printSection.style.display = 'none';
+            }
+        }
+
+        /* --- FUNÇÃO PARA GERAR A PLANILHA DO RELATÓRIO FINAL --- */
+        function gerarRelatorioFinal() {
+            const checkboxes = document.querySelectorAll('.chk-relatorio-rubrica:checked');
+
+            if (checkboxes.length === 0) {
+                alert("Nenhum cálculo foi selecionado. Marque a opção 'Adicionar cálculos ao relatório final' nas rubricas que deseja exportar.");
+                return;
+            }
+
+            const relatorioDados = [];
+
+            checkboxes.forEach(chk => {
+                const item = JSON.parse(decodeURIComponent(chk.dataset.export));
+                
+                const copyTextId = chk.id.replace('chk_', '');
+                const copyEl = document.getElementById(copyTextId);
+                
+                let detalhamentoTexto = item.detalhamentoCalculo;
+
+                if (copyEl) {
+                    let textoEditado = copyEl.innerText.trim();
+                    
+                    const prefixoComum = `${item.matricula} ${item.nome.toUpperCase()}`.trim();
+                    if (textoEditado.startsWith(prefixoComum)) {
+                        detalhamentoTexto = textoEditado.substring(prefixoComum.length).trim();
+                    } else {
+                        detalhamentoTexto = textoEditado;
+                    }
+                }
+
+                relatorioDados.push({
+                    "MATRÍCULA": item.matricula,
+                    "NOME COMPLETO": item.nome,
+                    "SIGLA TABELA": item.sigla,
+                    "DOE DATA": item.doeData,
+                    "DOE PÁGINA": item.doePagina,
+                    "DOE CADERNO": item.doeCaderno,
+                    "RUBRICA": item.rubrica,
+                    "VALOR CALCULADO": item.valorCalculado || 0,
+                    "DETALHAMENTO DOS CÁLCULOS": detalhamentoTexto
+                });
+            });
+
+            const worksheet = XLSX.utils.json_to_sheet(relatorioDados);
+
+            worksheet['!cols'] = [
+                { wch: 15 }, // Coluna A: Matrícula
+                { wch: 35 }, // Coluna B: Nome
+                { wch: 15 }, // Coluna C: Sigla
+                { wch: 12 }, // Coluna D: DOE Data
+                { wch: 12 }, // Coluna E: DOE Página
+                { wch: 12 }, // Coluna F: DOE Caderno
+                { wch: 10 }, // Coluna G: Rubrica
+                { wch: 18 }, // Coluna H: Valor Calculado
+                { wch: 90 }  // Coluna I: Detalhamento dos Cálculos
+            ];
+
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Relatorio_Final");
+
+            XLSX.writeFile(workbook, `Relatorio_Rescisao_Final_${new Date().toISOString().slice(0,10)}.xlsx`);
+        }
+    </script>
+</body>
+</html>

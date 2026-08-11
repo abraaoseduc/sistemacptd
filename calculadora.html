@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora Virtual / Rubricas - CPTD</title>
+    <style>
+        :root {
+            --primary: #16a34a;
+            --primary-hover: #15803d;
+            --secondary: #0f766e;
+            --bg: #f0fdf4;
+            --card-bg: #ffffff;
+            --text-main: #14532d;
+            --text-dark: #1f2937;
+            --border: #cbd5e1;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-dark);
+            padding: 2rem 1rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .header-logo {
+            max-width: 100%;
+            height: auto;
+            max-height: 120px;
+            object-fit: contain;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            color: var(--text-main);
+        }
+
+        .nav-back {
+            display: inline-block;
+            margin-bottom: 1.5rem;
+            color: var(--secondary);
+            font-weight: 600;
+            text-decoration: none;
+            font-size: 0.95rem;
+        }
+
+        .nav-back:hover {
+            text-decoration: underline;
+        }
+
+        .calc-card {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-main);
+        }
+
+        .form-control {
+            padding: 0.6rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .form-control:focus {
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 2px rgba(15, 118, 110, 0.2);
+        }
+
+        /* Caixa da Base de Cálculo */
+        .base-calculo-box {
+            background-color: #f1f5f9;
+            border-left: 4px solid var(--secondary);
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+            display: none;
+        }
+
+        .base-calculo-box h4 {
+            color: var(--secondary);
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .base-metrics {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            font-size: 0.95rem;
+        }
+
+        /* Seção de Rubricas */
+        .rubricas-section {
+            margin-top: 1.5rem;
+        }
+
+        .rubrica-item {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background: #fafafa;
+        }
+
+        .rubrica-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: bold;
+            font-size: 1rem;
+            color: var(--text-dark);
+            cursor: pointer;
+        }
+
+        .rubrica-header input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--secondary);
+            cursor: pointer;
+        }
+
+        .rubrica-body {
+            margin-top: 1rem;
+            padding-top: 0.75rem;
+            border-top: 1px dashed #cbd5e1;
+            display: none;
+        }
+
+        .rubrica-calc-row {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            margin-bottom: 0.5rem;
+        }
+
+        .rubrica-calc-row input[type="number"] {
+            width: 80px;
+        }
+
+        .resultado-text {
+            font-weight: bold;
+            color: var(--secondary);
+            font-size: 1.05rem;
+            margin-top: 0.5rem;
+        }
+
+        .formula-box {
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            padding: 0.75rem;
+            border-radius: 6px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            color: #0f172a;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <img src="logo.jpg" alt="Logo CPTD" class="header-logo">
+        <h1>Sistema CPTD</h1>
+    </header>
+
+    <a href="index.html" class="nav-back">← Voltar ao Portal Principal</a>
+
+    <div class="calc-card">
+        <h2 style="color: var(--secondary); margin-bottom: 1rem; font-size: 1.4rem;">Calculadora Virtual / Rubricas</h2>
+        
+        <!-- Formulário Entrada Base -->
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="cargaHoraria">Carga Horária (1 a 40 hrs):</label>
+                <input type="number" id="cargaHoraria" class="form-control" min="1" max="40" placeholder="Ex: 40" oninput="atualizarBaseECalculos()">
+            </div>
+
+            <div class="form-group">
+                <label for="tipoContrato">Tipo de Contrato:</label>
+                <select id="tipoContrato" class="form-control" onchange="atualizarBaseECalculos()">
+                    <option value="">Selecione...</option>
+                    <option value="K081">K081</option>
+                    <option value="K082">K082</option>
+                    <option value="K084">K084</option>
+                    <option value="K085">K085</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Painel Base de Cálculo -->
+        <div id="baseCalculoBox" class="base-calculo-box">
+            <h4>Base de Cálculo Encontrada:</h4>
+            <div class="base-metrics">
+                <div><strong>Remuneração:</strong> <span id="lblRemuneracao">R$ 0,00</span></div>
+                <div><strong>PVR:</strong> <span id="lblPvr">R$ 0,00</span></div>
+                <div><strong>Vencimento Total:</strong> <span id="lblVencimento" style="color: var(--secondary); font-weight: bold;">R$ 0,00</span></div>
+            </div>
+        </div>
+
+        <!-- Mês de Referência -->
+        <div class="form-group" style="margin-top: 1rem;">
+            <label for="mesReferencia">Mês de Referência (para divisão de dias):</label>
+            <select id="mesReferencia" class="form-control" style="max-width: 300px;" onchange="atualizarCalculosRubricas()">
+                <option value="1">Janeiro (31 dias)</option>
+                <option value="2">Fevereiro (28/29 dias)</option>
+                <option value="3">Março (31 dias)</option>
+                <option value="4">Abril (30 dias)</option>
+                <option value="5">Maio (31 dias)</option>
+                <option value="6">Junho (30 dias)</option>
+                <option value="7">Julho (31 dias)</option>
+                <option value="8" selected>Agosto (31 dias)</option>
+                <option value="9">Setembro (30 dias)</option>
+                <option value="10">Outubro (31 dias)</option>
+                <option value="11">Novembro (30 dias)</option>
+                <option value="12">Dezembro (31 dias)</option>
+            </select>
+        </div>
+
+        <!-- Seção de Seleção das Rubricas -->
+        <div class="rubricas-section">
+            <h3 style="color: var(--text-main); font-size: 1.1rem; margin-bottom: 1rem;">Rubricas para Cálculo:</h3>
+
+            <!-- RUBRICA 3158 -->
+            <div class="rubrica-item">
+                <label class="rubrica-header">
+                    <input type="checkbox" id="chk_3158" onchange="toggleRubrica('3158')">
+                    Rubrica 3158 - Décimo Terceiro / Rescisão
+                </label>
+                <div id="body_3158" class="rubrica-body">
+                    <div class="rubrica-calc-row">
+                        <label>Quantidade de Meses a pagar:</label>
+                        <input type="number" id="qtd_3158" class="form-control" min="1" max="12" placeholder="0" oninput="calcularRubrica3158()">
+                    </div>
+                    <div id="mem_3158" class="formula-box"></div>
+                    <div id="res_3158" class="resultado-text"></div>
+                </div>
+            </div>
+
+            <!-- RUBRICA 321 -->
+            <div class="rubrica-item">
+                <label class="rubrica-header">
+                    <input type="checkbox" id="chk_321" onchange="toggleRubrica('321')">
+                    Rubrica 321 - Remuneração Proporcional
+                </label>
+                <div id="body_321" class="rubrica-body">
+                    <div class="rubrica-calc-row">
+                        <label>Quantidade de Dias a pagar:</label>
+                        <input type="number" id="qtd_321" class="form-control" min="1" max="31" placeholder="0" oninput="calcularRubrica321()">
+                    </div>
+                    <div id="mem_321" class="formula-box"></div>
+                    <div id="res_321" class="resultado-text"></div>
+                </div>
+            </div>
+
+            <!-- RUBRICA 476 -->
+            <div class="rubrica-item">
+                <label class="rubrica-header">
+                    <input type="checkbox" id="chk_476" onchange="toggleRubrica('476')">
+                    Rubrica 476 - PVR Proporcional
+                </label>
+                <div id="body_476" class="rubrica-body">
+                    <div class="rubrica-calc-row">
+                        <label>Quantidade de Dias a pagar:</label>
+                        <input type="number" id="qtd_476" class="form-control" min="1" max="31" placeholder="0" oninput="calcularRubrica476()">
+                    </div>
+                    <div id="mem_476" class="formula-box"></div>
+                    <div id="res_476" class="resultado-text"></div>
+                </div>
+            </div>
+
+            <!-- RUBRICA 660 -->
+            <div class="rubrica-item">
+                <label class="rubrica-header">
+                    <input type="checkbox" id="chk_660" onchange="toggleRubrica('660')">
+                    Rubrica 660 - Vencimento Proporcional (Remuneração + PVR)
+                </label>
+                <div id="body_660" class="rubrica-body">
+                    <div class="rubrica-calc-row">
+                        <label>Quantidade de Dias a pagar:</label>
+                        <input type="number" id="qtd_660" class="form-control" min="1" max="31" placeholder="0" oninput="calcularRubrica660()">
+                    </div>
+                    <div id="mem_660" class="formula-box"></div>
+                    <div id="res_660" class="resultado-text"></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Importação do arquivo de tabela contido na pasta rubricas -->
+    <script src="rubricas/tabela.js"></script>
+
+    <script>
+        let baseAtual = {
+            remuneracao: 0,
+            pvr: 0,
+            vencimento: 0
+        };
+
+        function formatarMoeda(valor) {
+            return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        function getDiasMesReferencia() {
+            const mes = parseInt(document.getElementById('mesReferencia').value, 10);
+            const anoAtual = new Date().getFullYear();
+            return new Date(anoAtual, mes, 0).getDate();
+        }
+
+        // Leitura direta das constantes declaradas na tabela.js
+        function buscarNaTabelaJS(tipo, ch) {
+            let tabelaRef = null;
+
+            if (tipo === 'K081' || tipo === 'K082') {
+                if (typeof TABELA_K081_K082 !== 'undefined') tabelaRef = TABELA_K081_K082;
+            } else if (tipo === 'K084' || tipo === 'K085') {
+                if (typeof TABELA_K084_K085 !== 'undefined') tabelaRef = TABELA_K084_K085;
+            }
+
+            if (tabelaRef && tabelaRef[ch]) {
+                const item = tabelaRef[ch];
+                const rem = item.remuneracao || 0;
+                const pvr = item.pvr || 0;
+                const total = item.somatorio || (rem + pvr);
+
+                return {
+                    remuneracao: rem,
+                    pvr: pvr,
+                    vencimento: total
+                };
+            }
+            return null;
+        }
+
+        function atualizarBaseECalculos() {
+            const ch = parseInt(document.getElementById('cargaHoraria').value, 10);
+            const tipo = document.getElementById('tipoContrato').value;
+            const baseBox = document.getElementById('baseCalculoBox');
+
+            if (ch >= 1 && ch <= 40 && tipo) {
+                const dados = buscarNaTabelaJS(tipo, ch);
+
+                if (dados) {
+                    baseAtual.remuneracao = dados.remuneracao;
+                    baseAtual.pvr = dados.pvr;
+                    baseAtual.vencimento = dados.vencimento;
+
+                    document.getElementById('lblRemuneracao').innerText = formatarMoeda(baseAtual.remuneracao);
+                    document.getElementById('lblPvr').innerText = formatarMoeda(baseAtual.pvr);
+                    document.getElementById('lblVencimento').innerText = formatarMoeda(baseAtual.vencimento);
+
+                    baseBox.style.display = 'block';
+                    atualizarCalculosRubricas();
+                    return;
+                }
+            }
+
+            baseBox.style.display = 'none';
+            baseAtual = { remuneracao: 0, pvr: 0, vencimento: 0 };
+            atualizarCalculosRubricas();
+        }
+
+        function toggleRubrica(id) {
+            const chk = document.getElementById(`chk_${id}`);
+            const body = document.getElementById(`body_${id}`);
+            body.style.display = chk.checked ? 'block' : 'none';
+
+            if (chk.checked) {
+                atualizarCalculosRubricas();
+            }
+        }
+
+        function atualizarCalculosRubricas() {
+            if (document.getElementById('chk_3158').checked) calcularRubrica3158();
+            if (document.getElementById('chk_321').checked) calcularRubrica321();
+            if (document.getElementById('chk_476').checked) calcularRubrica476();
+            if (document.getElementById('chk_660').checked) calcularRubrica660();
+        }
+
+        /* --- CÁLCULO RUBRICA 3158 --- */
+        function calcularRubrica3158() {
+            const meses = parseInt(document.getElementById('qtd_3158').value, 10) || 0;
+            const resEl = document.getElementById('res_3158');
+            const memEl = document.getElementById('mem_3158');
+
+            if (baseAtual.vencimento <= 0) {
+                memEl.innerText = "Informe Carga Horária e Contrato para visualizar a conta.";
+                resEl.innerText = "";
+                return;
+            }
+
+            const valor1_12 = Math.round((baseAtual.vencimento / 12) * 100) / 100;
+            const total = Math.round((valor1_12 * meses) * 100) / 100;
+
+            memEl.innerText = `${formatarMoeda(baseAtual.vencimento)} / 12 = ${formatarMoeda(valor1_12)} x ${meses} Mês(es)`;
+            resEl.innerText = meses > 0 ? `Total a Pagar: ${formatarMoeda(total)}` : "Informe a quantidade de meses.";
+        }
+
+        /* --- CÁLCULO RUBRICA 321 --- */
+        function calcularRubrica321() {
+            const diasToPay = parseInt(document.getElementById('qtd_321').value, 10) || 0;
+            const diasMes = getDiasMesReferencia();
+            const resEl = document.getElementById('res_321');
+            const memEl = document.getElementById('mem_321');
+
+            if (baseAtual.remuneracao <= 0) {
+                memEl.innerText = "Informe Carga Horária e Contrato para visualizar a conta.";
+                resEl.innerText = "";
+                return;
+            }
+
+            const valorDia = Math.round((baseAtual.remuneracao / diasMes) * 100) / 100;
+            const total = Math.round((valorDia * diasToPay) * 100) / 100;
+
+            memEl.innerText = `${formatarMoeda(baseAtual.remuneracao)} / ${diasMes} Dias = ${formatarMoeda(valorDia)} x ${diasToPay} Dia(s)`;
+            resEl.innerText = diasToPay > 0 ? `Total a Pagar: ${formatarMoeda(total)}` : "Informe a quantidade de dias.";
+        }
+
+        /* --- CÁLCULO RUBRICA 476 --- */
+        function calcularRubrica476() {
+            const diasToPay = parseInt(document.getElementById('qtd_476').value, 10) || 0;
+            const diasMes = getDiasMesReferencia();
+            const resEl = document.getElementById('res_476');
+            const memEl = document.getElementById('mem_476');
+
+            if (baseAtual.pvr <= 0) {
+                memEl.innerText = "Este contrato/CH não possui PVR cadastrado.";
+                resEl.innerText = "";
+                return;
+            }
+
+            const valorDia = Math.round((baseAtual.pvr / diasMes) * 100) / 100;
+            const total = Math.round((valorDia * diasToPay) * 100) / 100;
+
+            memEl.innerText = `${formatarMoeda(baseAtual.pvr)} / ${diasMes} Dias = ${formatarMoeda(valorDia)} x ${diasToPay} Dia(s)`;
+            resEl.innerText = diasToPay > 0 ? `Total a Pagar: ${formatarMoeda(total)}` : "Informe a quantidade de dias.";
+        }
+
+        /* --- CÁLCULO RUBRICA 660 --- */
+        function calcularRubrica660() {
+            const diasToPay = parseInt(document.getElementById('qtd_660').value, 10) || 0;
+            const diasMes = getDiasMesReferencia();
+            const resEl = document.getElementById('res_660');
+            const memEl = document.getElementById('mem_660');
+
+            if (baseAtual.vencimento <= 0) {
+                memEl.innerText = "Informe Carga Horária e Contrato para visualizar a conta.";
+                resEl.innerText = "";
+                return;
+            }
+
+            const valorDia = Math.round((baseAtual.vencimento / diasMes) * 100) / 100;
+            const total = Math.round((valorDia * diasToPay) * 100) / 100;
+
+            memEl.innerText = `${formatarMoeda(baseAtual.vencimento)} / ${diasMes} Dias = ${formatarMoeda(valorDia)} x ${diasToPay} Dia(s)`;
+            resEl.innerText = diasToPay > 0 ? `Total a Pagar: ${formatarMoeda(total)}` : "Informe a quantidade de dias.";
+        }
+    </script>
+
+</body>
+</html>

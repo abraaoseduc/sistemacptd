@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema CPTD - Portal Principal</title>
+    <style>
+        :root {
+            --primary: #16a34a;
+            --primary-hover: #15803d;
+            --secondary: #0f766e;
+            --secondary-hover: #0d9488;
+            --bg: #f0fdf4;
+            --card-bg: #ffffff;
+            --text-main: #14532d;
+            --text-dark: #1f2937;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-dark);
+            padding: 2rem 1rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 2.5rem;
+            text-align: center;
+        }
+
+        .header-logo {
+            max-width: 100%;
+            height: auto;
+            max-height: 220px;
+            object-fit: contain;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            color: var(--text-main);
+        }
+
+        .home-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 40vh;
+            gap: 1.5rem;
+        }
+
+        .home-title {
+            font-size: 1.3rem;
+            color: var(--text-main);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Container dos botões superiores (Rescisão e Redução lado a lado) */
+        .menu-buttons-primary {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            justify-content: center;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        /* Container do botão inferior (Centralizado abaixo) */
+        .menu-buttons-secondary {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .btn-menu {
+            background-color: var(--card-bg);
+            border: 2px solid var(--primary);
+            color: var(--text-main);
+            padding: 1.75rem 2rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            flex: 1;
+            min-width: 220px;
+            text-align: center;
+            text-decoration: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-menu:hover {
+            background-color: var(--primary);
+            color: #ffffff;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(22, 163, 74, 0.25);
+        }
+
+        /* Estilo para o novo botão (Calculadora Virtual / Rubricas) */
+        .btn-menu-alt {
+            border-color: var(--secondary);
+            color: var(--secondary);
+        }
+
+        .btn-menu-alt:hover {
+            background-color: var(--secondary-hover);
+            color: #ffffff;
+            box-shadow: 0 8px 15px rgba(15, 118, 110, 0.25);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <img src="logo.jpg" alt="Logo CPTD" class="header-logo">
+        <h1>Sistema CPTD</h1>
+    </header>
+
+    <div class="home-container">
+        <div class="home-title">Selecione o módulo de atendimento:</div>
+        
+        <!-- Linha 1: Rescisão e Redução lado a lado -->
+        <div class="menu-buttons-primary">
+            <a href="rescisao.html" class="btn-menu">RESCISÃO</a>
+            <a href="reducao.html" class="btn-menu">REDUÇÃO</a>
+        </div>
+
+        <!-- Linha 2: Calculadora Virtual / Rubricas centralizado -->
+        <div class="menu-buttons-secondary">
+            <a href="calculadora.html" class="btn-menu btn-menu-alt">Calculadora Virtual / Rubricas</a>
+        </div>
+    </div>
+
+</body>
+</html>

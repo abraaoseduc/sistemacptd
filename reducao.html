@@ -1,0 +1,1181 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema para Redução de Carga Horária – CPTD</title>
+    <!-- Biblioteca SheetJS para Leitura e Exportação de Planilhas Excel -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --primary: #16a34a;
+            --primary-hover: #15803d;
+            --bg: #f0fdf4;
+            --card-bg: #ffffff;
+            --text-main: #14532d;
+            --text-muted: #4ade80;
+            --text-dark: #1f2937;
+            --text-gray: #4b5563;
+            --border: #bbf7d0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-dark);
+            padding: 2rem 1rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .header-logo {
+            max-width: 100%;
+            height: auto;
+            max-height: 250px;
+            object-fit: contain;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+        }
+
+        .top-actions {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .btn-back-home, .btn-reopen-input {
+            background-color: #64748b;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border-radius: 4px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            text-decoration: none;
+        }
+
+        .btn-back-home:hover, .btn-reopen-input:hover {
+            background-color: #475569;
+        }
+
+        .drop-zone {
+            border: 2px dashed var(--primary);
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+            background-color: #f8fafc;
+            color: var(--text-gray);
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s;
+            margin-bottom: 1rem;
+        }
+
+        .drop-zone.dragover {
+            background-color: #dcfce7;
+            border-color: var(--primary-hover);
+            color: var(--text-main);
+        }
+
+        .drop-zone p {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .drop-zone span {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        .instructions-box {
+            background-color: #fefce8;
+            border: 1px solid #fef08a;
+            border-left: 5px solid #eab308;
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            font-size: 0.88rem;
+            color: #713f12;
+            line-height: 1.6;
+        }
+
+        .instructions-box strong {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+        }
+
+        .input-section {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+        }
+
+        textarea {
+            width: 100%;
+            height: 120px;
+            padding: 1rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            resize: vertical;
+            font-family: monospace;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            outline: none;
+        }
+
+        textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.2);
+        }
+
+        .btn-process {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            width: 100%;
+        }
+
+        .btn-process:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .results-section {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .card-header {
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 0.75rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .card-header h2 {
+            font-size: 1.3rem;
+            color: var(--text-main);
+        }
+
+        .card-header .matricula {
+            font-size: 0.9rem;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .card-body {
+            display: grid;
+            grid-template-columns: minmax(280px, 340px) 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 900px) {
+            .card-body {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .left-column, .right-column {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .right-column {
+            background-color: #fafafa;
+            border: 1px dashed var(--border);
+            border-radius: 6px;
+            padding: 1.25rem;
+        }
+
+        .right-column-title {
+            font-size: 1rem;
+            font-weight: bold;
+            color: var(--text-main);
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .info-group {
+            margin-bottom: 0.5rem;
+        }
+
+        .info-group label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-gray);
+            display: block;
+            margin-bottom: 0.15rem;
+        }
+
+        .info-group span {
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+
+        .info-group span.text-sim {
+            color: #dc2626 !important;
+            font-weight: 700 !important;
+        }
+
+        .info-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        .info-grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+        }
+
+        .badge-block {
+            background-color: #f0fdf4;
+            border: 1px solid #dcfce7;
+            padding: 0.75rem;
+            border-radius: 6px;
+        }
+
+        .badge-block strong {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+            border-bottom: 1px dashed var(--border);
+            padding-bottom: 0.25rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: var(--text-gray);
+            padding: 3rem;
+        }
+
+        .base-info-box {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.85rem;
+            margin-bottom: 0.75rem;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .reducao-folha-box {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-left: 4px solid var(--primary);
+            border-radius: 6px;
+            padding: 0.85rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .reducao-folha-box label.title-folha {
+            font-weight: 700;
+            color: var(--text-main);
+            font-size: 0.9rem;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .folha-options {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .folha-option-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            cursor: pointer;
+        }
+
+        .folha-option-item input[type="radio"] {
+            accent-color: var(--primary);
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .calc-card-item {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-left: 4px solid var(--primary);
+            border-radius: 6px;
+            padding: 1rem;
+            margin-top: 0.75rem;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+        }
+
+        .calc-card-item h4 {
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .calc-details {
+            font-size: 0.85rem;
+            color: var(--text-dark);
+            line-height: 1.5;
+            margin-bottom: 0.75rem;
+            background-color: #f8fafc;
+            padding: 0.6rem;
+            border-radius: 4px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .copy-box-container {
+            background-color: #f0fdf4;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.75rem;
+            margin-top: 0.5rem;
+        }
+
+        .copy-box-text {
+            font-size: 0.82rem;
+            color: #166534;
+            font-weight: 600;
+            word-break: break-word;
+            margin-bottom: 0.5rem;
+            line-height: 1.4;
+            background: #ffffff;
+            padding: 0.5rem;
+            border: 1px solid #bbf7d0;
+            border-radius: 4px;
+            outline: none;
+            transition: border-color 0.2s, background-color 0.2s;
+        }
+
+        .copy-box-text[contenteditable="true"] {
+            background-color: #fffde7;
+            border-color: #f59e0b;
+            color: #78350f;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .btn-copy {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.35rem 0.75rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .btn-copy:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .print-section {
+            margin-top: 2rem;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-print {
+            background-color: #1e293b;
+            color: #ffffff;
+            border: none;
+            padding: 0.85rem 2rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-print:hover {
+            background-color: #0f172a;
+        }
+
+        .error-msg {
+            font-size: 0.85rem;
+            color: #dc2626;
+            background-color: #fef2f2;
+            border: 1px solid #fecaca;
+            padding: 0.5rem;
+            border-radius: 4px;
+            margin-top: 0.5rem;
+        }
+
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 1.5cm 1cm;
+            }
+
+            body {
+                background: #ffffff !important;
+                color: #000000 !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                font-size: 10pt;
+            }
+
+            header {
+                margin-bottom: 1rem !important;
+                border-bottom: 2px solid #14532d;
+                padding-bottom: 0.5rem;
+            }
+
+            .header-logo {
+                max-height: 80px !important;
+                margin-bottom: 0.5rem;
+            }
+
+            header h1 {
+                font-size: 1.2rem !important;
+                color: #14532d !important;
+            }
+
+            .top-actions, .input-section, .print-section, .btn-copy, .reducao-folha-box {
+                display: none !important;
+            }
+
+            .results-section {
+                display: block !important;
+            }
+
+            .card {
+                border: none !important;
+                padding: 0 !important;
+                margin-bottom: 0 !important;
+                box-shadow: none !important;
+                page-break-after: always;
+                break-after: page;
+            }
+
+            .card-header {
+                border-bottom: 1px solid #000 !important;
+                margin-bottom: 0.75rem !important;
+                padding-bottom: 0.25rem !important;
+            }
+
+            .card-header h2 {
+                font-size: 1.1rem !important;
+                color: #000 !important;
+            }
+
+            .card-header .matricula {
+                font-size: 0.9rem !important;
+                color: #000 !important;
+            }
+
+            .card-body {
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 1rem !important;
+            }
+
+            .left-column {
+                display: grid !important;
+                grid-template-columns: repeat(3, 1fr) !important;
+                gap: 0.5rem !important;
+                border: 1px solid #cbd5e1;
+                padding: 0.75rem;
+                border-radius: 4px;
+                background-color: #f8fafc !important;
+            }
+
+            .badge-block {
+                border: none !important;
+                background: transparent !important;
+                padding: 0 !important;
+            }
+
+            .badge-block strong {
+                font-size: 0.75rem !important;
+                border-bottom: 1px solid #94a3b8 !important;
+                color: #000 !important;
+                margin-bottom: 0.25rem !important;
+            }
+
+            .info-group label {
+                font-size: 0.65rem !important;
+                color: #475569 !important;
+            }
+
+            .info-group span {
+                font-size: 0.8rem !important;
+                color: #000 !important;
+            }
+
+            .right-column {
+                background: transparent !important;
+                border: none !important;
+                padding: 0 !important;
+            }
+
+            .right-column-title {
+                font-size: 0.95rem !important;
+                color: #000 !important;
+                border-bottom: 1px solid #000 !important;
+                margin-bottom: 0.75rem !important;
+            }
+
+            .base-info-box {
+                border: 1px solid #94a3b8 !important;
+                background: #f1f5f9 !important;
+                font-size: 0.85rem !important;
+                padding: 0.5rem !important;
+            }
+
+            .calc-card-item {
+                border: 1px solid #cbd5e1 !important;
+                border-left: 3px solid #16a34a !important;
+                margin-top: 0.5rem !important;
+                padding: 0.5rem !important;
+                box-shadow: none !important;
+                page-break-inside: avoid;
+            }
+
+            .calc-card-item h4 {
+                font-size: 0.85rem !important;
+            }
+
+            .calc-details {
+                background: #ffffff !important;
+                border: 1px solid #e2e8f0 !important;
+                font-size: 0.8rem !important;
+                padding: 0.4rem !important;
+            }
+
+            .copy-box-container {
+                background: #f8fafc !important;
+                border: 1px solid #cbd5e1 !important;
+                padding: 0.5rem !important;
+            }
+
+            .copy-box-text {
+                font-size: 0.75rem !important;
+                border: none !important;
+                padding: 0 !important;
+                color: #000 !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <img src="logo.jpg" alt="Logo CPTD" class="header-logo">
+        <h1>Sistema para Redução de Carga Horária – CPTD</h1>
+    </header>
+
+    <div class="top-actions">
+        <a href="index.html" class="btn-back-home">← Voltar ao Menu Principal</a>
+        <button id="btnReopenInput" class="btn-reopen-input" onclick="reexibirEntrada()" style="display: none;">📥 Carregar Nova Planilha / Texto</button>
+    </div>
+
+    <!-- Área de Entrada de Dados -->
+    <section class="input-section" id="inputSection">
+        <div class="instructions-box">
+            <strong>INSTRUÇÃO PARA PREENCHIMENTO:</strong>
+            <div>NO SISTEMA DO SIGE-CT, NA ABA “PAGAMENTO” E “ALTERAÇÕES DE CONTRATOS”, SELECIONE A OPÇÃO EXCEL EM “EXTENSÃO RELATÓRIO”.</div>
+            <div>CLIQUE EM “LISTAR” E DEPOIS EM “EXPORTAR EXCEL”.</div>
+            <div>APÓS BAIXAR A PLANILHA, ARRASTE O ARQUIVO ABAIXO OU COPIE A LINHA COMPLETA DO SERVIDOR NA CAIXA DE TEXTO:</div>
+        </div>
+
+        <!-- Área de Upload por Drag & Drop / Clique -->
+        <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+            <p>📄 Arraste e solte o arquivo da planilha aqui, ou clique para selecionar</p>
+            <span>Formatos suportados: .xlsx, .xls, .csv</span>
+            <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" style="display: none;" onchange="manipularArquivo(this.files)">
+        </div>
+
+        <textarea id="inputData" placeholder="Cole aqui as linhas da planilha (com ou sem cabeçalho)..."></textarea>
+        <button class="btn-process" onclick="processarDados()">Processar Informações</button>
+    </section>
+
+    <main class="results-section" id="resultsContainer">
+        <div class="empty-state">Nenhum dado processado ainda. Envie a planilha ou cole as informações acima e clique em "Processar Informações".</div>
+    </main>
+
+    <div class="print-section" id="printSection" style="display: none;">
+        <button class="btn-print" onclick="window.print()">
+            🖨️ GERAR PDF PARA IMPRESSÃO
+        </button>
+        <button class="btn-print" style="background-color: #0284c7;" onclick="gerarRelatorioFinal()">
+            📊 GERAR RELATÓRIO FINAL
+        </button>
+    </div>
+
+    <!-- Importação da tabela central de valores -->
+    <script src="rubricas/tabela.js"></script>
+
+    <!-- Importação dos scripts de cálculo apontando exatamente para a pasta 'reducao' -->
+    <script src="reducao/reducao660.js"></script>
+    <script src="reducao/reducao321.js"></script>
+    <script src="reducao/reducao476.js"></script>
+
+    <script>
+        window.opcaoFolhaReducao = {};
+
+        /* --- DRAG & DROP E CARREGAMENTO DE ARQUIVOS --- */
+        const dropZone = document.getElementById('dropZone');
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+            document.body.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.add('dragover'), false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.remove('dragover'), false);
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            manipularArquivo(files);
+        });
+
+        function manipularArquivo(files) {
+            if (!files || files.length === 0) return;
+            const file = files[0];
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+
+                const tsvText = XLSX.utils.sheet_to_csv(worksheet, { FS: "\t" });
+                document.getElementById('inputData').value = tsvText;
+            };
+
+            reader.readAsArrayBuffer(file);
+        }
+
+        function reexibirEntrada() {
+            document.getElementById('inputSection').style.display = 'block';
+            document.getElementById('btnReopenInput').style.display = 'none';
+        }
+
+        /* --- FUNÇÕES AUXILIARES DE CÁLCULO E FORMATO --- */
+        function formatarMoeda(val) {
+            return val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        function tratarMatricula(val) {
+            if (!val) return '';
+            let limpo = val.trim();
+            if (limpo.startsWith('222001')) {
+                return limpo.substring(6);
+            }
+            return limpo;
+        }
+
+        function formatarTipoContrato(val) {
+            if (!val) return '-';
+            const v = val.trim().toUpperCase();
+            if (v === 'I') return 'INICIAL';
+            if (v === 'P') return '<span style="color: #dc2626; font-weight: 700;">PRORROGAÇÃO</span>';
+            return val;
+        }
+
+        function formatarOcorrencia(val) {
+            if (!val) return { texto: 'Não', classe: '' };
+            const v = val.trim().toUpperCase();
+            if (v === 'S' || v === 'SIM') {
+                return { texto: 'Sim', classe: 'text-sim' };
+            }
+            return { texto: 'Não', classe: '' };
+        }
+
+        function copiarTexto(elementId) {
+            const el = document.getElementById(elementId);
+            const textToCopy = el.innerText;
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                alert("Texto copiado com sucesso!");
+            }).catch(err => {
+                console.error("Erro ao copiar texto: ", err);
+            });
+        }
+
+        function habilitarEdicaoCalculo(elementId) {
+            const el = document.getElementById(elementId);
+            const btn = document.getElementById(`btn_edit_${elementId}`);
+            
+            if (el.contentEditable === "true") {
+                el.contentEditable = "false";
+                btn.innerHTML = "✏️ Editar Cálculos";
+                btn.style.backgroundColor = "#d97706";
+            } else {
+                el.contentEditable = "true";
+                el.focus();
+                btn.innerHTML = "💾 Concluir Edição";
+                btn.style.backgroundColor = "#16a34a";
+            }
+        }
+
+        function recalcularRubricaEspecificaReducao(cardId, rubrica) {
+            const card = document.getElementById(cardId);
+            if (!card) return;
+
+            const dataJson = card.dataset.json;
+            if (!dataJson) return;
+
+            const opcaoSelecionada = window.opcaoFolhaReducao[cardId] || 'vigente';
+            atualizarCalculoReducao(dataJson, opcaoSelecionada);
+        }
+
+        function atualizarCalculoReducao(cardDataJson, opcaoSelecionada) {
+            const data = JSON.parse(decodeURIComponent(cardDataJson));
+            window.opcaoFolhaReducao[data.cardId] = opcaoSelecionada;
+
+            const card = document.getElementById(data.cardId);
+            if (!card) return;
+
+            const calcContainer = card.querySelector('.calc-dinamico-output');
+            if (!calcContainer) return;
+
+            const siglaUpper = (data.sigla || '').toUpperCase();
+            const eK081ouK082 = siglaUpper.includes('K081') || siglaUpper.includes('K082');
+            const eK084ouK085 = siglaUpper.includes('K084') || siglaUpper.includes('K085');
+
+            let valorRemuneracao = 0;
+            let valorPVR = 0;
+
+            // Ajuste crucial: Para o mês vigente (321/476), utiliza a CHATU para recuperar a remuneração/PVR
+            const chRef = (opcaoSelecionada === 'vigente') ? (data.chatu || data.chNum) : (data.chNum || data.chant);
+
+            if (eK081ouK082 && typeof TABELA_K081_K082 !== 'undefined') {
+                const info = TABELA_K081_K082[chRef];
+                if (info) {
+                    valorRemuneracao = info.remuneracao;
+                    valorPVR = info.pvr;
+                }
+            } else if (eK084ouK085 && typeof TABELA_K084_K085 !== 'undefined') {
+                const info = TABELA_K084_K085[chRef];
+                if (info) {
+                    valorRemuneracao = info.remuneracao;
+                    valorPVR = 0;
+                }
+            }
+
+            let htmlResultados = '';
+
+            if (opcaoSelecionada === 'anterior') {
+                // Mantém o 660 puxando corretamente conforme regra do mês anterior
+                if (typeof gerarCalculo660Reducao === 'function') {
+                    htmlResultados += gerarCalculo660Reducao(data, valorRemuneracao, valorPVR);
+                } else {
+                    htmlResultados += `<div class="error-msg">Aguardando implementação de 'reducao/reducao660.js'.</div>`;
+                }
+            } else if (opcaoSelecionada === 'vigente') {
+                let rodouSucesso = false;
+
+                if (typeof gerarCalculo321Reducao === 'function') {
+                    htmlResultados += gerarCalculo321Reducao(data, valorRemuneracao);
+                    rodouSucesso = true;
+                }
+                if (typeof gerarCalculo476Reducao === 'function') {
+                    htmlResultados += gerarCalculo476Reducao(data, valorPVR);
+                    rodouSucesso = true;
+                }
+
+                if (!rodouSucesso) {
+                    htmlResultados += `<div class="error-msg">Aguardando implementação de 'reducao/reducao321.js' e 'reducao/reducao476.js'.</div>`;
+                }
+            }
+
+            calcContainer.innerHTML = htmlResultados;
+        }
+
+        function processarDados() {
+            const rawText = document.getElementById('inputData').value;
+            const container = document.getElementById('resultsContainer');
+            const printSection = document.getElementById('printSection');
+            const inputSection = document.getElementById('inputSection');
+            const btnReopenInput = document.getElementById('btnReopenInput');
+
+            container.innerHTML = '';
+
+            if (!rawText.trim()) {
+                container.innerHTML = '<div class="empty-state">Por favor, insira algum texto ou envie uma planilha para processar.</div>';
+                printSection.style.display = 'none';
+                return;
+            }
+
+            const lines = rawText.split('\n').filter(line => line.trim() !== '');
+            let cardsCount = 0;
+
+            lines.forEach((line, index) => {
+                const cols = line.split('\t').map(c => c.trim());
+
+                if (cols[0] && cols[0].toUpperCase().includes('CREDE') && cols[2] && cols[2].toUpperCase().includes('MATRICULA')) {
+                    return;
+                }
+
+                if (cols.length < 5) {
+                    return;
+                }
+
+                cardsCount++;
+                const cardId = `card_${index}`;
+
+                const cardDataObject = {
+                    cardId: cardId,
+                    matricula: tratarMatricula(cols[2] || ''),
+                    nome: cols[3] || '-',
+                    tipo: cols[4] || '',
+                    chNum: parseInt(cols[5] || '0', 10),
+                    dtini: cols[6] || '-',
+                    dtfim: cols[7] || '-',
+                    sigla: cols[8] || '-',
+                    dtpubl: cols[10] || '-',
+                    pagdoe: cols[11] || '-',
+                    caddoe: cols[12] || '-',
+                    
+                    chant: parseInt(cols[13] || '0', 10),
+                    valant: parseFloat((cols[14] || '0').replace(',', '.')),
+                    chatu: parseInt(cols[15] || '0', 10),
+                    valatu: parseFloat((cols[16] || '0').replace(',', '.')),
+                    chfin: parseInt(cols[17] || '0', 10),
+                    valfin: parseFloat((cols[18] || '0').replace(',', '.')),
+
+                    dtinialt: cols[19] || '-',
+                    dtalt: cols[20] || '-',
+                    tipoalt: cols[21] || '-',
+                    
+                    temfalt: cols[25] || '',
+                    temlic: cols[26] || '',
+                    temreducao: cols[29] || ''
+                };
+
+                const jsonEncoded = encodeURIComponent(JSON.stringify(cardDataObject));
+
+                const chTexto = cardDataObject.chNum ? `${cardDataObject.chNum} Horas` : '-';
+
+                const faltasObj = formatarOcorrencia(cardDataObject.temfalt);
+                const licencaObj = formatarOcorrencia(cardDataObject.temlic);
+                const reducaoObj = formatarOcorrencia(cardDataObject.temreducao);
+
+                const tipoAltUpper = cardDataObject.tipoalt.toUpperCase();
+                const isTipoIncorreto = tipoAltUpper.includes("RESCISÃO") || tipoAltUpper.includes("RESCISAO");
+                const classeTipoAlt = isTipoIncorreto ? 'text-sim' : '';
+
+                const siglaUpper = (cardDataObject.sigla || '').toUpperCase();
+                const eK081ouK082 = siglaUpper.includes('K081') || siglaUpper.includes('K082');
+                const eK084ouK085 = siglaUpper.includes('K084') || siglaUpper.includes('K085');
+
+                // Para o resumo principal de exibição, usaremos os valores de referência da CHATU
+                let valorRemuneracao = 0;
+                let valorPVR = 0;
+                let valorVencimento = 0;
+                let textoPVRDisplay = '';
+
+                if (eK081ouK082 && typeof TABELA_K081_K082 !== 'undefined') {
+                    const info = TABELA_K081_K082[cardDataObject.chatu || cardDataObject.chNum];
+                    if (info) {
+                        valorRemuneracao = info.remuneracao;
+                        valorPVR = info.pvr;
+                        valorVencimento = info.somatorio;
+                        textoPVRDisplay = formatarMoeda(valorPVR);
+                    }
+                } else if (eK084ouK085 && typeof TABELA_K084_K085 !== 'undefined') {
+                    const info = TABELA_K084_K085[cardDataObject.chatu || cardDataObject.chNum];
+                    if (info) {
+                        valorRemuneracao = info.remuneracao;
+                        valorPVR = 0;
+                        valorVencimento = info.remuneracao;
+                        textoPVRDisplay = `Sem PVR (${siglaUpper})`;
+                    }
+                }
+
+                const cardHTML = `
+                    <div class="card" id="${cardId}" data-json="${jsonEncoded}">
+                        <div class="card-header">
+                            <h2>${cardDataObject.nome}</h2>
+                            <div class="matricula">MATRÍCULA: ${cardDataObject.matricula}</div>
+                        </div>
+
+                        <div class="card-body">
+                            <div class="left-column">
+                                <div class="info-group">
+                                    <label>Tipo de Contrato</label>
+                                    <span>${formatarTipoContrato(cardDataObject.tipo)}</span>
+                                </div>
+
+                                <div class="info-group">
+                                    <label>Vigência</label>
+                                    <span>${cardDataObject.dtini} a ${cardDataObject.dtfim}</span>
+                                </div>
+
+                                <div class="info-grid-2">
+                                    <div class="info-group">
+                                        <label>Sigla / Tabela</label>
+                                        <span>${cardDataObject.sigla}</span>
+                                    </div>
+                                    <div class="info-group">
+                                        <label>Carga Horária</label>
+                                        <span>${chTexto}</span>
+                                    </div>
+                                </div>
+
+                                <div class="badge-block">
+                                    <strong>INFORMAÇÕES DE REDUÇÃO (CH)</strong>
+                                    <div class="info-grid-3">
+                                        <div class="info-group">
+                                            <label>CH Inicial</label>
+                                            <span>${cardDataObject.chant}h</span>
+                                        </div>
+                                        <div class="info-group">
+                                            <label>CH Reduzida</label>
+                                            <span>${cardDataObject.chatu}h</span>
+                                        </div>
+                                        <div class="info-group" style="margin-bottom:0;">
+                                            <label>CH Final</label>
+                                            <span>${cardDataObject.chfin}h</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="badge-block">
+                                    <strong>DOE (Diário Oficial)</strong>
+                                    <div class="info-group">
+                                        <label>Data</label>
+                                        <span>${cardDataObject.dtpubl}</span>
+                                    </div>
+                                    <div class="info-group">
+                                        <label>Página</label>
+                                        <span>${cardDataObject.pagdoe}</span>
+                                    </div>
+                                    <div class="info-group" style="margin-bottom:0;">
+                                        <label>Caderno</label>
+                                        <span>${cardDataObject.caddoe}</span>
+                                    </div>
+                                </div>
+
+                                <div class="badge-block">
+                                    <strong>SIGE-CT</strong>
+                                    <div class="info-group">
+                                        <label>Data Inicial do Contrato</label>
+                                        <span>${cardDataObject.dtinialt}</span>
+                                    </div>
+                                    <div class="info-group">
+                                        <label>Data de Alteração do Contrato</label>
+                                        <span>${cardDataObject.dtalt}</span>
+                                    </div>
+                                    <div class="info-group" style="margin-bottom:0;">
+                                        <label>Tipo Alteração</label>
+                                        <span class="${classeTipoAlt}">${cardDataObject.tipoalt}</span>
+                                    </div>
+                                </div>
+
+                                <div class="badge-block">
+                                    <strong>OCORRÊNCIAS</strong>
+                                    <div class="info-group">
+                                        <label>Faltas</label>
+                                        <span class="${faltasObj.classe}">${faltasObj.texto}</span>
+                                    </div>
+                                    <div class="info-group">
+                                        <label>Licença</label>
+                                        <span class="${licencaObj.classe}">${licencaObj.texto}</span>
+                                    </div>
+                                    <div class="info-group" style="margin-bottom:0;">
+                                        <label>Redução</label>
+                                        <span class="${reducaoObj.classe}">${reducaoObj.texto}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="right-column">
+                                <div class="right-column-title">DEMONSTRATIVO DE CÁLCULOS</div>
+                                
+                                <div class="base-info-box">
+                                    <strong>Base de Cálculo do Mês Vigente (“${siglaUpper}” – CHATU: “${cardDataObject.chatu}h”/semanais):</strong><br>
+                                    • <strong>Remuneração:</strong> ${formatarMoeda(valorRemuneracao)}<br>
+                                    • <strong>PVR:</strong> ${textoPVRDisplay}<br>
+                                    • <strong>VENCIMENTO:</strong> <strong>${formatarMoeda(valorVencimento)}</strong>
+                                </div>
+
+                                <div class="reducao-folha-box">
+                                    <label class="title-folha">Qual a Folha da Aplicação da Redução?</label>
+                                    <div class="folha-options">
+                                        <label class="folha-option-item">
+                                            <input type="radio" name="folha_${cardId}" value="anterior" onchange="atualizarCalculoReducao('${jsonEncoded}', 'anterior')">
+                                            Folha referente ao mês anterior da alteração (Cálculo de Despesa Anular)
+                                        </label>
+                                        <label class="folha-option-item">
+                                            <input type="radio" name="folha_${cardId}" value="vigente" onchange="atualizarCalculoReducao('${jsonEncoded}', 'vigente')">
+                                            Folha referente ao mês vigente da alteração (Cálculo de Diferenças à Pagar)
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="calc-dinamico-output">
+                                    <div style="color: var(--text-gray); font-size: 0.85rem; font-style: italic;">
+                                        Selecione uma das opções acima para exibir os cálculos referentes à redução.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                container.innerHTML += cardHTML;
+            });
+
+            if (cardsCount > 0) {
+                printSection.style.display = 'flex';
+                inputSection.style.display = 'none';
+                btnReopenInput.style.display = 'inline-flex';
+            } else {
+                container.innerHTML = '<div class="empty-state">Nenhum registro válido foi encontrado no texto/planilha fornecido.</div>';
+                printSection.style.display = 'none';
+            }
+        }
+
+        /* --- FUNÇÃO PARA GERAR A PLANILHA DO RELATÓRIO FINAL --- */
+        function gerarRelatorioFinal() {
+            const checkboxes = document.querySelectorAll('.chk-relatorio-rubrica:checked');
+
+            if (checkboxes.length === 0) {
+                alert("Nenhum cálculo foi selecionado. Marque a opção 'Adicionar cálculos ao relatório final' nas rubricas que deseja exportar.");
+                return;
+            }
+
+            const relatorioDados = [];
+
+            checkboxes.forEach(chk => {
+                const item = JSON.parse(decodeURIComponent(chk.dataset.export));
+                
+                const copyTextId = chk.id.replace('chk_', '');
+                const copyEl = document.getElementById(copyTextId);
+                
+                let detalhamentoTexto = item.detalhamentoCalculo;
+
+                if (copyEl) {
+                    let textoEditado = copyEl.innerText.trim();
+                    
+                    const prefixoComum = `${item.matricula} ${item.nome.toUpperCase()}`.trim();
+                    if (textoEditado.startsWith(prefixoComum)) {
+                        detalhamentoTexto = textoEditado.substring(prefixoComum.length).trim();
+                    } else {
+                        detalhamentoTexto = textoEditado;
+                    }
+                }
+
+                // Ajuste 1: Garante a remoção do prefixo "222001" na matrícula exportada
+                const matriculaTratada = tratarMatricula(item.matricula);
+
+                // Ajuste 2: Garante a formatação adequada para a coluna G (Rubrica com sufixo (Redução))
+                let rubricaFormatada = item.rubrica || '';
+                const rubricaLimpa = rubricaFormatada.toString().trim();
+
+                if (['660', '321', '476'].includes(rubricaLimpa)) {
+                    rubricaFormatada = `${rubricaLimpa} (Redução)`;
+                } else if (!rubricaFormatada.includes('(Redução)')) {
+                    // Fallback para caso venha somente os dígitos 321, 476 ou 660 em outros formatos
+                    rubricaFormatada = rubricaFormatada.replace(/^(321|476|660)$/, '$1 (Redução)');
+                }
+
+                relatorioDados.push({
+                    "MATRÍCULA": matriculaTratada,
+                    "NOME COMPLETO": item.nome,
+                    "SIGLA TABELA": item.sigla,
+                    "DOE DATA": item.doeData,
+                    "DOE PÁGINA": item.doePagina,
+                    "DOE CADERNO": item.doeCaderno,
+                    "RUBRICA": rubricaFormatada,
+                    "VALOR CALCULADO": item.valorCalculado || 0,
+                    "DETALHAMENTO DOS CÁLCULOS": detalhamentoTexto
+                });
+            });
+
+            const worksheet = XLSX.utils.json_to_sheet(relatorioDados);
+
+            worksheet['!cols'] = [
+                { wch: 15 },
+                { wch: 35 },
+                { wch: 15 },
+                { wch: 12 },
+                { wch: 12 },
+                { wch: 12 },
+                { wch: 18 },
+                { wch: 18 },
+                { wch: 90 }
+            ];
+
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Relatorio_Final");
+
+            XLSX.writeFile(workbook, `Relatorio_Reducao_Final_${new Date().toISOString().slice(0,10)}.xlsx`);
+        }
+    </script>
+</body>
+</html>
