@@ -27,7 +27,7 @@
             background-color: var(--bg);
             color: var(--text-dark);
             padding: 2rem 1rem;
-            max-width: 900px;
+            max-width: 950px;
             margin: 0 auto;
         }
 
@@ -173,7 +173,7 @@
         }
 
         .rubrica-calc-row input[type="number"] {
-            width: 80px;
+            width: 90px;
         }
 
         .resultado-text {
@@ -192,6 +192,114 @@
             font-size: 0.9rem;
             margin-top: 0.5rem;
             color: #0f172a;
+        }
+
+        /* --- Estilos para o Vale Alimentação --- */
+        .va-months-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .va-month-chk {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            font-size: 0.85rem;
+            cursor: pointer;
+            background: #ffffff;
+            padding: 0.4rem;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+        }
+
+        @media (max-width: 650px) {
+            .va-months-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .calendars-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .calendar-card {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.75rem;
+            width: 250px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .calendar-title {
+            text-align: center;
+            font-weight: bold;
+            color: var(--secondary);
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+            text-transform: capitalize;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+            text-align: center;
+            font-size: 0.75rem;
+        }
+
+        .calendar-header-day {
+            font-weight: bold;
+            color: #64748b;
+            padding-bottom: 4px;
+        }
+
+        .calendar-day {
+            padding: 5px 0;
+            border-radius: 4px;
+            cursor: pointer;
+            user-select: none;
+            background: #f1f5f9;
+        }
+
+        .calendar-day.empty {
+            background: transparent;
+            cursor: default;
+        }
+
+        .calendar-day.weekend {
+            color: #94a3b8;
+            background: #f8fafc;
+        }
+
+        .calendar-day.selected {
+            background-color: var(--primary);
+            color: white;
+            font-weight: bold;
+        }
+
+        .va-summary-row {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-top: 0.75rem;
+            font-weight: bold;
+            color: var(--text-dark);
+            flex-wrap: wrap;
+        }
+
+        .va-summary-row input {
+            width: 80px;
+            text-align: center;
+            background-color: #e2e8f0;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -323,6 +431,50 @@
                 </div>
             </div>
 
+            <!-- VALE ALIMENTAÇÃO -->
+            <div class="rubrica-item">
+                <label class="rubrica-header">
+                    <input type="checkbox" id="chk_va" onchange="toggleRubrica('va')">
+                    Vale Alimentação
+                </label>
+                <div id="body_va" class="rubrica-body">
+                    <div class="rubrica-calc-row">
+                        <label for="valor_va_dia">Valor diário do Vale Alimentação (R$):</label>
+                        <input type="number" id="valor_va_dia" class="form-control" step="0.01" value="16.96" oninput="calcularVA()">
+                    </div>
+
+                    <div style="margin-top: 0.75rem;">
+                        <label style="font-weight: 600; font-size: 0.9rem; color: var(--text-main);">Meses de referência para cálculo:</label>
+                        <div class="va-months-grid">
+                            <label class="va-month-chk"><input type="checkbox" class="chk-va-month" value="0" onchange="renderizarCalendariosVA()"> Jan</label>
+                            <label class="va-month-chk"><input type="checkbox" class="chk-va-month" value="1" onchange="renderizarCalendariosVA()"> Fev</label>
+                            <label class="va-month-chk"><input type="checkbox" class="chk-va-month" value="2" onchange="renderizarCalendariosVA()"> Mar</label>
+                            <label class="va-month-chk"><input type="checkbox" class="chk-va-month" value="3" onchange="renderizarCalendariosVA()"> Abr</label>
+                            <label class="va-month-chk"><input type="checkbox" class="chk-va-month" value="4" onchange="renderizarCalendariosVA()"> Mai</label>
+                            <label class="va-month-chk"><input type="checkbox" class="chk-va-month" value="5" onchange="renderizarCalendariosVA()"> Jun</label>
+                            <label class="va-month-chk"><input type="checkbox" class="chk-va-month" value="6" onchange="renderizarCalendariosVA()"> Jul</label>
+                            <label class="va-month-chk"><input type="checkbox" class="chk-va-month" value="7" onchange="renderizarCalendariosVA()"> Ago</label>
+                            <label class="va-month-chk"><input type="checkbox" class="chk-va-month" value="8" onchange="renderizarCalendariosVA()"> Set</label>
+                            <label class="va-month-chk"><input type="checkbox" class="chk-va-month" value="9" onchange="renderizarCalendariosVA()"> Out</label>
+                            <label class="va-month-chk"><input type="checkbox" class="chk-va-month" value="10" onchange="renderizarCalendariosVA()"> Nov</label>
+                            <label class="va-month-chk"><input type="checkbox" class="chk-va-month" value="11" onchange="renderizarCalendariosVA()"> Dez</label>
+                        </div>
+                    </div>
+
+                    <!-- Conteiner dos Calendarios Exibidos -->
+                    <div id="calendarsContainer" class="calendars-container"></div>
+
+                    <!-- Resumo dos Dias Uteis -->
+                    <div class="va-summary-row">
+                        <label for="diasUteisVA">DIAS ÚTEIS PARA CÁLCULO DE VA:</label>
+                        <input type="number" id="diasUteisVA" class="form-control" value="0" readonly>
+                    </div>
+
+                    <div id="mem_va" class="formula-box"></div>
+                    <div id="res_va" class="resultado-text"></div>
+                </div>
+            </div>
+
         </div>
     </div>
 
@@ -335,6 +487,14 @@
             pvr: 0,
             vencimento: 0
         };
+
+        const nomesMeses = [
+            "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+            "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+        ];
+
+        // Guarda o estado de dias selecionados por mês
+        let diasSelecionadosPorMes = {};
 
         function formatarMoeda(valor) {
             return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -405,7 +565,11 @@
             body.style.display = chk.checked ? 'block' : 'none';
 
             if (chk.checked) {
-                atualizarCalculosRubricas();
+                if (id === 'va') {
+                    renderizarCalendariosVA();
+                } else {
+                    atualizarCalculosRubricas();
+                }
             }
         }
 
@@ -414,6 +578,7 @@
             if (document.getElementById('chk_321').checked) calcularRubrica321();
             if (document.getElementById('chk_476').checked) calcularRubrica476();
             if (document.getElementById('chk_660').checked) calcularRubrica660();
+            if (document.getElementById('chk_va').checked) calcularVA();
         }
 
         /* --- CÁLCULO RUBRICA 3158 --- */
@@ -493,6 +658,125 @@
 
             memEl.innerText = `${formatarMoeda(baseAtual.vencimento)} / ${diasMes} Dias = ${formatarMoeda(valorDia)} x ${diasToPay} Dia(s)`;
             resEl.innerText = diasToPay > 0 ? `Total a Pagar: ${formatarMoeda(total)}` : "Informe a quantidade de dias.";
+        }
+
+        /* --- LÓGICA DO VALE ALIMENTAÇÃO --- */
+        function renderizarCalendariosVA() {
+            const container = document.getElementById('calendarsContainer');
+            container.innerHTML = '';
+
+            const chks = document.querySelectorAll('.chk-va-month:checked');
+            const anoAtual = new Date().getFullYear();
+
+            chks.forEach(chk => {
+                const mesIndex = parseInt(chk.value, 10);
+                
+                // Inicializa dias selecionados por padrão (segunda a sexta) caso ainda não exista
+                if (!diasSelecionadosPorMes[mesIndex]) {
+                    diasSelecionadosPorMes[mesIndex] = [];
+                    const totalDias = new Date(anoAtual, mesIndex + 1, 0).getDate();
+                    for (let d = 1; d <= totalDias; d++) {
+                        const diaSemana = new Date(anoAtual, mesIndex, d).getDay();
+                        if (diaSemana !== 0 && diaSemana !== 6) { // Não é domingo (0) nem sábado (6)
+                            diasSelecionadosPorMes[mesIndex].push(d);
+                        }
+                    }
+                }
+
+                const card = document.createElement('div');
+                card.className = 'calendar-card';
+
+                const title = document.createElement('div');
+                title.className = 'calendar-title';
+                title.innerText = `${nomesMeses[mesIndex]} / ${anoAtual}`;
+                card.appendChild(title);
+
+                const grid = document.createElement('div');
+                grid.className = 'calendar-grid';
+
+                const diasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+                diasSemana.forEach(d => {
+                    const h = document.createElement('div');
+                    h.className = 'calendar-header-day';
+                    h.innerText = d;
+                    grid.appendChild(h);
+                });
+
+                const primeiroDiaSemana = new Date(anoAtual, mesIndex, 1).getDay();
+                const totalDiasMes = new Date(anoAtual, mesIndex + 1, 0).getDate();
+
+                // Espaços vazios antes do dia 1
+                for (let i = 0; i < primeiroDiaSemana; i++) {
+                    const empty = document.createElement('div');
+                    empty.className = 'calendar-day empty';
+                    grid.appendChild(empty);
+                }
+
+                // Dias do mês
+                for (let dia = 1; dia <= totalDiasMes; dia++) {
+                    const diaSemana = new Date(anoAtual, mesIndex, dia).getDay();
+                    const dayEl = document.createElement('div');
+                    dayEl.className = 'calendar-day';
+
+                    if (diaSemana === 0 || diaSemana === 6) {
+                        dayEl.classList.add('weekend');
+                    }
+
+                    if (diasSelecionadosPorMes[mesIndex].includes(dia)) {
+                        dayEl.classList.add('selected');
+                    }
+
+                    dayEl.innerText = dia;
+                    dayEl.onclick = () => toggleDiaVA(mesIndex, dia, dayEl);
+
+                    grid.appendChild(dayEl);
+                }
+
+                card.appendChild(grid);
+                container.appendChild(card);
+            });
+
+            calcularVA();
+        }
+
+        function toggleDiaVA(mesIndex, dia, el) {
+            if (!diasSelecionadosPorMes[mesIndex]) {
+                diasSelecionadosPorMes[mesIndex] = [];
+            }
+
+            const pos = diasSelecionadosPorMes[mesIndex].indexOf(dia);
+            if (pos > -1) {
+                diasSelecionadosPorMes[mesIndex].splice(pos, 1);
+                el.classList.remove('selected');
+            } else {
+                diasSelecionadosPorMes[mesIndex].push(dia);
+                el.classList.add('selected');
+            }
+
+            calcularVA();
+        }
+
+        function calcularVA() {
+            const valorDia = parseFloat(document.getElementById('valor_va_dia').value) || 0;
+            const chks = document.querySelectorAll('.chk-va-month:checked');
+            
+            let totalDias = 0;
+            chks.forEach(chk => {
+                const mesIndex = parseInt(chk.value, 10);
+                if (diasSelecionadosPorMes[mesIndex]) {
+                    totalDias += diasSelecionadosPorMes[mesIndex].length;
+                }
+            });
+
+            document.getElementById('diasUteisVA').value = totalDias;
+
+            const resEl = document.getElementById('res_va');
+            const memEl = document.getElementById('mem_va');
+
+            const total = Math.round((valorDia * totalDias) * 100) / 100;
+
+            memEl.innerText = `${totalDias} Dia(s) x ${formatarMoeda(valorDia)}`;
+            resEl.innerText = totalDias > 0 ? `Total a Pagar: ${formatarMoeda(total)}` : "Selecione ao menos um mês para calcular.";
         }
     </script>
 
