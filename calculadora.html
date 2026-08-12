@@ -14,6 +14,8 @@
             --text-main: #14532d;
             --text-dark: #1f2937;
             --border: #cbd5e1;
+            --holiday-bg: #fca5a5;
+            --holiday-text: #991b1b;
         }
 
         * {
@@ -194,7 +196,7 @@
             color: #0f172a;
         }
 
-        /* --- Estilos para o Vale Alimentação --- */
+        /* Estilos do Vale Alimentação */
         .va-months-grid {
             display: grid;
             grid-template-columns: repeat(6, 1fr);
@@ -234,8 +236,11 @@
             border: 1px solid var(--border);
             border-radius: 6px;
             padding: 0.75rem;
-            width: 250px;
+            width: 260px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
 
         .calendar-title {
@@ -279,10 +284,35 @@
             background: #f8fafc;
         }
 
-        .calendar-day.selected {
-            background-color: var(--primary);
-            color: white;
+        .calendar-day.holiday {
+            background-color: var(--holiday-bg);
+            color: var(--holiday-text);
             font-weight: bold;
+        }
+
+        .calendar-day.selected {
+            background-color: var(--primary) !important;
+            color: white !important;
+            font-weight: bold;
+        }
+
+        /* Rodapé de feriados no card */
+        .calendar-holidays-footer {
+            margin-top: 0.75rem;
+            padding: 0.5rem;
+            background-color: #fee2e2;
+            border-radius: 4px;
+            border-left: 3px solid #ef4444;
+            font-size: 0.75rem;
+            color: #7f1d1d;
+        }
+
+        .calendar-holidays-footer div {
+            margin-bottom: 2px;
+        }
+
+        .calendar-holidays-footer div:last-child {
+            margin-bottom: 0;
         }
 
         .va-summary-row {
@@ -300,6 +330,25 @@
             text-align: center;
             background-color: #e2e8f0;
             font-weight: bold;
+        }
+
+        .legend-box {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
         }
     </style>
 </head>
@@ -461,6 +510,11 @@
                         </div>
                     </div>
 
+                    <div class="legend-box">
+                        <div class="legend-item"><div class="legend-color" style="background: var(--primary);"></div> Selecionado / Dia útil</div>
+                        <div class="legend-item"><div class="legend-color" style="background: var(--holiday-bg);"></div> Feriado Nacional</div>
+                    </div>
+
                     <!-- Conteiner dos Calendarios Exibidos -->
                     <div id="calendarsContainer" class="calendars-container"></div>
 
@@ -493,7 +547,23 @@
             "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
         ];
 
-        // Guarda o estado de dias selecionados por mês
+        // Mapeamento de Feriados Nacionais 2026 no formato MM-DD e suas descrições
+        const feriadosNacionais2026 = {
+            "00-01": "1 de janeiro - Confraternização Universal",
+            "01-16": "16 de fevereiro - Carnaval",
+            "01-17": "17 de fevereiro - Carnaval",
+            "03-03": "3 de abril - Sexta-feira Santa",
+            "03-21": "21 de abril - Tiradentes",
+            "04-01": "1 de maio - Dia do Trabalho",
+            "05-04": "4 de junho - Corpus Christi",
+            "08-07": "7 de setembro - Independência do Brasil",
+            "09-12": "12 de outubro - Nossa Senhora Aparecida",
+            "10-02": "2 de novembro - Finados",
+            "10-15": "15 de novembro - Proclamação da República",
+            "10-20": "20 de novembro - Dia da Consciência Negra",
+            "11-25": "25 de dezembro - Natal"
+        };
+
         let diasSelecionadosPorMes = {};
 
         function formatarMoeda(valor) {
@@ -506,7 +576,6 @@
             return new Date(anoAtual, mes, 0).getDate();
         }
 
-        // Leitura direta das constantes declaradas na tabela.js
         function buscarNaTabelaJS(tipo, ch) {
             let tabelaRef = null;
 
@@ -661,6 +730,13 @@
         }
 
         /* --- LÓGICA DO VALE ALIMENTAÇÃO --- */
+        function getFeriadoInfo(mesIndex, dia) {
+            const mesStr = String(mesIndex).padStart(2, '0');
+            const diaStr = String(dia).padStart(2, '0');
+            const key = `${mesStr}-${diaStr}`;
+            return feriadosNacionais2026[key] || null;
+        }
+
         function renderizarCalendariosVA() {
             const container = document.getElementById('calendarsContainer');
             container.innerHTML = '';
@@ -670,14 +746,16 @@
 
             chks.forEach(chk => {
                 const mesIndex = parseInt(chk.value, 10);
+                const feriadosDoMes = [];
                 
-                // Inicializa dias selecionados por padrão (segunda a sexta) caso ainda não exista
+                // Inicializa dias selecionados padrão (segunda a sexta, descartando feriados)
                 if (!diasSelecionadosPorMes[mesIndex]) {
                     diasSelecionadosPorMes[mesIndex] = [];
                     const totalDias = new Date(anoAtual, mesIndex + 1, 0).getDate();
                     for (let d = 1; d <= totalDias; d++) {
                         const diaSemana = new Date(anoAtual, mesIndex, d).getDay();
-                        if (diaSemana !== 0 && diaSemana !== 6) { // Não é domingo (0) nem sábado (6)
+                        const feriadoDesc = getFeriadoInfo(mesIndex, d);
+                        if (diaSemana !== 0 && diaSemana !== 6 && !feriadoDesc) {
                             diasSelecionadosPorMes[mesIndex].push(d);
                         }
                     }
@@ -686,10 +764,12 @@
                 const card = document.createElement('div');
                 card.className = 'calendar-card';
 
+                const topContainer = document.createElement('div');
+
                 const title = document.createElement('div');
                 title.className = 'calendar-title';
                 title.innerText = `${nomesMeses[mesIndex]} / ${anoAtual}`;
-                card.appendChild(title);
+                topContainer.appendChild(title);
 
                 const grid = document.createElement('div');
                 grid.className = 'calendar-grid';
@@ -705,7 +785,7 @@
                 const primeiroDiaSemana = new Date(anoAtual, mesIndex, 1).getDay();
                 const totalDiasMes = new Date(anoAtual, mesIndex + 1, 0).getDate();
 
-                // Espaços vazios antes do dia 1
+                // Espaços vazios
                 for (let i = 0; i < primeiroDiaSemana; i++) {
                     const empty = document.createElement('div');
                     empty.className = 'calendar-day empty';
@@ -715,11 +795,17 @@
                 // Dias do mês
                 for (let dia = 1; dia <= totalDiasMes; dia++) {
                     const diaSemana = new Date(anoAtual, mesIndex, dia).getDay();
+                    const feriadoDesc = getFeriadoInfo(mesIndex, dia);
                     const dayEl = document.createElement('div');
                     dayEl.className = 'calendar-day';
 
                     if (diaSemana === 0 || diaSemana === 6) {
                         dayEl.classList.add('weekend');
+                    }
+
+                    if (feriadoDesc) {
+                        dayEl.classList.add('holiday');
+                        feriadosDoMes.push(feriadoDesc);
                     }
 
                     if (diasSelecionadosPorMes[mesIndex].includes(dia)) {
@@ -732,7 +818,21 @@
                     grid.appendChild(dayEl);
                 }
 
-                card.appendChild(grid);
+                topContainer.appendChild(grid);
+                card.appendChild(topContainer);
+
+                // Rodapé com os feriados do mês, caso existam
+                if (feriadosDoMes.length > 0) {
+                    const footer = document.createElement('div');
+                    footer.className = 'calendar-holidays-footer';
+                    feriadosDoMes.forEach(f => {
+                        const item = document.createElement('div');
+                        item.innerText = f;
+                        footer.appendChild(item);
+                    });
+                    card.appendChild(footer);
+                }
+
                 container.appendChild(card);
             });
 
