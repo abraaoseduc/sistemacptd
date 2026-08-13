@@ -79,6 +79,26 @@
             background-color: #475569;
         }
 
+        .btn-manual-toggle {
+            background-color: #0284c7;
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-bottom: 1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: background-color 0.2s;
+        }
+
+        .btn-manual-toggle:hover {
+            background-color: #0369a1;
+        }
+
         .drop-zone {
             border: 2px dashed var(--primary);
             border-radius: 8px;
@@ -134,6 +154,136 @@
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             margin-bottom: 2rem;
             border: 1px solid var(--border);
+        }
+
+        /* --- Estilos do Formulário Manual Estruturado --- */
+        .manual-form-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+            background: #fafafa;
+            padding: 1.25rem;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .form-row {
+            display: grid;
+            gap: 1rem;
+            width: 100%;
+        }
+
+        /* Linha 1: Nome e Matrícula */
+        .row-1 {
+            grid-template-columns: 2fr 1fr;
+        }
+
+        /* Linha 2: Tipo, Sigla, CH */
+        .row-2 {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+
+        /* Linha 3: Dt Ini, Dt Alt */
+        .row-3 {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        /* Responsividade para telas menores */
+        @media (max-width: 768px) {
+            .row-1, .row-2, .row-3 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-group-manual {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .form-group-manual label {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text-main);
+            text-transform: uppercase;
+        }
+
+        .form-group-manual input, 
+        .form-group-manual select {
+            padding: 0.55rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            outline: none;
+            background: #ffffff;
+            width: 100%;
+        }
+
+        .form-group-manual input:focus, 
+        .form-group-manual select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.2);
+        }
+
+        .input-matricula-wrapper {
+            display: flex;
+            align-items: center;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            background: #ffffff;
+            overflow: hidden;
+        }
+
+        .input-matricula-wrapper .prefix {
+            background-color: #e2e8f0;
+            padding: 0.55rem 0.6rem;
+            font-weight: 600;
+            color: #475569;
+            font-size: 0.95rem;
+            border-right: 1px solid #cbd5e1;
+            user-select: none;
+        }
+
+        .input-matricula-wrapper input {
+            border: none;
+            border-radius: 0;
+            width: 100%;
+        }
+
+        .input-matricula-wrapper input:focus {
+            box-shadow: none;
+        }
+
+        /* Estilo para os blocos agrupados de 3 colunas (Diário Oficial / Ocorrências) */
+        .section-block-manual {
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 0.85rem;
+        }
+
+        .section-block-manual > label.block-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-main);
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 0.6rem;
+            border-bottom: 1px dashed #cbd5e1;
+            padding-bottom: 0.3rem;
+        }
+
+        .block-grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+        }
+
+        @media (max-width: 600px) {
+            .block-grid-3 {
+                grid-template-columns: 1fr;
+            }
         }
 
         textarea {
@@ -480,7 +630,7 @@
                 color: #14532d !important;
             }
 
-            .top-actions, .input-section, .print-section, .btn-copy, .rubricas-container, .badge-block:has(.rubricas-container), .lancamento-selector, .folha-selector, .diferencas-selector {
+            .top-actions, .input-section, .print-section, .btn-copy, .rubricas-container, .badge-block:has(.rubricas-container), .lancamento-selector, .folha-selector, .diferencas-selector, .btn-manual-toggle {
                 display: none !important;
             }
 
@@ -621,26 +771,139 @@
 
     <!-- Área de Entrada de Dados -->
     <section class="input-section" id="inputSection">
-        <div class="instructions-box">
-            <strong>INSTRUÇÃO PARA PREENCHIMENTO:</strong>
-            <div>NO SISTEMA DO SIGE-CT, NA ABA “PAGAMENTO” E “ALTERAÇÕES DE CONTRATOS”, SELECIONE A OPÇÃO EXCEL EM “EXTENSÃO RELATÓRIO”.</div>
-            <div>CLIQUE EM “LISTAR” E DEPOIS EM “EXPORTAR EXCEL”.</div>
-            <div>APÓS BAIXAR A PLANILHA, ARRASTE O ARQUIVO ABAIXO OU COPIE A LINHA COMPLETA DO SERVIDOR NA CAIXA DE TEXTO:</div>
+        <button id="btnManualToggle" class="btn-manual-toggle" onclick="toggleModoEntrada()">
+            ✏️ Preencher Manualmente
+        </button>
+
+        <!-- Bloco de Arquivo / Texto (Modo Padrão) -->
+        <div id="wrapperFileText">
+            <div class="instructions-box">
+                <strong>INSTRUÇÃO PARA PREENCHIMENTO:</strong>
+                <div>NO SISTEMA DO SIGE-CT, NA ABA “PAGAMENTO” E “ALTERAÇÕES DE CONTRATOS”, SELECIONE A OPÇÃO EXCEL EM “EXTENSÃO RELATÓRIO”.</div>
+                <div>CLIQUE EM “LISTAR” E DEPOIS EM “EXPORTAR EXCEL”.</div>
+                <div>APÓS BAIXAR A PLANILHA, ARRASTE O ARQUIVO ABAIXO OU COPIE A LINHA COMPLETA DO SERVIDOR NA CAIXA DE TEXTO:</div>
+            </div>
+
+            <!-- Área de Upload por Drag & Drop / Clique -->
+            <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+                <p>📄 Arraste e solte o arquivo da planilha aqui, ou clique para selecionar</p>
+                <span>Formatos suportados: .xlsx, .xls, .csv</span>
+                <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" style="display: none;" onchange="manipularArquivo(this.files)">
+            </div>
+
+            <textarea id="inputData" placeholder="Cole aqui as linhas da planilha (com ou sem cabeçalho)..."></textarea>
         </div>
 
-        <!-- Área de Upload por Drag & Drop / Clique -->
-        <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
-            <p>📄 Arraste e solte o arquivo da planilha aqui, ou clique para selecionar</p>
-            <span>Formatos suportados: .xlsx, .xls, .csv</span>
-            <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" style="display: none;" onchange="manipularArquivo(this.files)">
+        <!-- Bloco de Form Manual Reorganizado -->
+        <div id="wrapperManual" style="display: none;">
+            <div class="manual-form-container">
+                
+                <!-- LINHA 1: Nome Completo e Matrícula -->
+                <div class="form-row row-1">
+                    <div class="form-group-manual">
+                        <label for="m_nome">Nome Completo</label>
+                        <input type="text" id="m_nome" placeholder="Ex: JOÃO DA SILVA">
+                    </div>
+                    <div class="form-group-manual">
+                        <label for="m_matricula">Matrícula</label>
+                        <div class="input-matricula-wrapper">
+                            <span class="prefix">222001</span>
+                            <input type="text" id="m_matricula" placeholder="1234">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- LINHA 2: Tipo de Contrato, Sigla e Carga Horária -->
+                <div class="form-row row-2">
+                    <div class="form-group-manual">
+                        <label for="m_tipo">Tipo de Contrato</label>
+                        <select id="m_tipo">
+                            <option value="I">INICIAL (I)</option>
+                            <option value="P">PRORROGAÇÃO (P)</option>
+                        </select>
+                    </div>
+                    <div class="form-group-manual">
+                        <label for="m_sigla">Sigla da Tabela</label>
+                        <select id="m_sigla">
+                            <option value="K081">K081</option>
+                            <option value="K082">K082</option>
+                            <option value="K084">K084</option>
+                            <option value="K085">K085</option>
+                        </select>
+                    </div>
+                    <div class="form-group-manual">
+                        <label for="m_ch">Carga Horária (hrs)</label>
+                        <input type="number" id="m_ch" min="1" max="40" placeholder="Ex: 40">
+                    </div>
+                </div>
+
+                <!-- LINHA 3: Data Inicial do Contrato e Data de Alteração -->
+                <div class="form-row row-3">
+                    <div class="form-group-manual">
+                        <label for="m_dtini">Data Inicial do Contrato</label>
+                        <input type="text" id="m_dtini" placeholder="DD/MM/AAAA" maxlength="10" oninput="aplicarMascaraData(this)">
+                    </div>
+                    <div class="form-group-manual">
+                        <label for="m_dtalt">Data de Alteração do Contrato</label>
+                        <input type="text" id="m_dtalt" placeholder="DD/MM/AAAA" maxlength="10" oninput="aplicarMascaraData(this)">
+                    </div>
+                </div>
+
+                <!-- LINHA 4: Diário Oficial (Ajustado: Data, Página, Caderno) -->
+                <div class="section-block-manual">
+                    <label class="block-title">Diário Oficial</label>
+                    <div class="block-grid-3">
+                        <div class="form-group-manual">
+                            <label for="m_dtpubl" style="font-size: 0.75rem;">Data do DOE</label>
+                            <input type="text" id="m_dtpubl" placeholder="DD/MM/AAAA" maxlength="10" oninput="aplicarMascaraData(this)">
+                        </div>
+                        <div class="form-group-manual">
+                            <label for="m_pagdoe" style="font-size: 0.75rem;">Página do DOE</label>
+                            <input type="text" id="m_pagdoe" placeholder="Ex: 45">
+                        </div>
+                        <div class="form-group-manual">
+                            <label for="m_caddoe" style="font-size: 0.75rem;">Caderno do DOE</label>
+                            <input type="text" id="m_caddoe" placeholder="Ex: 1 ou Executivo">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- LINHA 5: Ocorrências -->
+                <div class="section-block-manual">
+                    <label class="block-title">Ocorrências</label>
+                    <div class="block-grid-3">
+                        <div class="form-group-manual">
+                            <label for="m_faltas" style="font-size: 0.75rem;">Faltas</label>
+                            <select id="m_faltas">
+                                <option value="N">Não</option>
+                                <option value="S">Sim</option>
+                            </select>
+                        </div>
+                        <div class="form-group-manual">
+                            <label for="m_licenca" style="font-size: 0.75rem;">Licença</label>
+                            <select id="m_licenca">
+                                <option value="N">Não</option>
+                                <option value="S">Sim</option>
+                            </select>
+                        </div>
+                        <div class="form-group-manual">
+                            <label for="m_reducao" style="font-size: 0.75rem;">Redução</label>
+                            <select id="m_reducao">
+                                <option value="N">Não</option>
+                                <option value="S">Sim</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
         </div>
 
-        <textarea id="inputData" placeholder="Cole aqui as linhas da planilha (com ou sem cabeçalho)..."></textarea>
-        <button class="btn-process" onclick="processarDados()">Processar Informações</button>
+        <button class="btn-process" onclick="processarInformacoesGerais()">Processar Informações</button>
     </section>
 
     <main class="results-section" id="resultsContainer">
-        <div class="empty-state">Nenhum dado processado ainda. Envie a planilha ou cole as informações acima e clique em "Processar Informações".</div>
+        <div class="empty-state">Nenhum dado processado ainda. Envie a planilha, cole as informações ou preencha manualmente acima e clique em "Processar Informações".</div>
     </main>
 
     <div class="print-section" id="printSection" style="display: none;">
@@ -666,6 +929,39 @@
         window.estadoTiposLancamento = {};
         window.estadoBloqueioFolha = {};
         window.estadoDiferencas321_476 = {};
+        let modoManual = false;
+
+        /* Máscara automática para campos de Data DD/MM/AAAA */
+        function aplicarMascaraData(input) {
+            let v = input.value.replace(/\D/g, '');
+            if (v.length > 8) v = v.substring(0, 8);
+            if (v.length > 4) {
+                input.value = v.replace(/(\d{2})(\d{2})(\d{1,4})/, '$1/$2/$3');
+            } else if (v.length > 2) {
+                input.value = v.replace(/(\d{2})(\d{1,2})/, '$1/$2');
+            } else {
+                input.value = v;
+            }
+        }
+
+        function toggleModoEntrada() {
+            modoManual = !modoManual;
+            const wFileText = document.getElementById('wrapperFileText');
+            const wManual = document.getElementById('wrapperManual');
+            const btn = document.getElementById('btnManualToggle');
+
+            if (modoManual) {
+                wFileText.style.display = 'none';
+                wManual.style.display = 'block';
+                btn.innerHTML = '📄 Carregar via Planilha / Texto';
+                btn.style.backgroundColor = '#64748b';
+            } else {
+                wFileText.style.display = 'block';
+                wManual.style.display = 'none';
+                btn.innerHTML = '✏️ Preencher Manualmente';
+                btn.style.backgroundColor = '#0284c7';
+            }
+        }
 
         /* --- DRAG & DROP E CARREGAMENTO DE ARQUIVOS --- */
         const dropZone = document.getElementById('dropZone');
@@ -734,8 +1030,8 @@
         function formatarTipoContrato(val) {
             if (!val) return '-';
             const v = val.trim().toUpperCase();
-            if (v === 'I') return 'INICIAL';
-            if (v === 'P') return '<span style="color: #dc2626; font-weight: 700;">PRORROGAÇÃO</span>';
+            if (v === 'I' || v === 'INICIAL') return 'INICIAL';
+            if (v === 'P' || v === 'PRORROGAÇÃO' || v === 'PRORROGACAO') return '<span style="color: #dc2626; font-weight: 700;">PRORROGAÇÃO</span>';
             return val;
         }
 
@@ -962,6 +1258,189 @@
             targetDiv.innerHTML = htmlCalculo;
         }
 
+        function processarInformacoesGerais() {
+            if (modoManual) {
+                processarManual();
+            } else {
+                processarDados();
+            }
+        }
+
+        function processarManual() {
+            const container = document.getElementById('resultsContainer');
+            const printSection = document.getElementById('printSection');
+            const inputSection = document.getElementById('inputSection');
+            const btnReopenInput = document.getElementById('btnReopenInput');
+
+            const nome = document.getElementById('m_nome').value.trim() || 'NÃO INFORMADO';
+            const matSufixo = document.getElementById('m_matricula').value.trim();
+            const matricula = matSufixo ? matSufixo : '-';
+            const tipo = document.getElementById('m_tipo').value;
+            const sigla = document.getElementById('m_sigla').value;
+            const chNum = parseInt(document.getElementById('m_ch').value, 10) || 0;
+            const dtini = document.getElementById('m_dtini').value.trim() || '-';
+            const dtalt = document.getElementById('m_dtalt').value.trim() || '-';
+            const dtpubl = document.getElementById('m_dtpubl').value.trim() || '-';
+            const pagdoe = document.getElementById('m_pagdoe').value.trim() || '-';
+            const caddoe = document.getElementById('m_caddoe').value.trim() || '-';
+            const temfalt = document.getElementById('m_faltas').value;
+            const temlic = document.getElementById('m_licenca').value;
+            const temreducao = document.getElementById('m_reducao').value;
+
+            const cardId = `card_manual_${Date.now()}`;
+
+            const cardDataObject = {
+                cardId: cardId,
+                matricula: matricula,
+                nome: nome,
+                tipo: tipo,
+                chNum: chNum,
+                dtini: dtini,
+                dtfim: '-',
+                sigla: sigla,
+                dtpubl: dtpubl,
+                pagdoe: pagdoe,
+                caddoe: caddoe,
+                dtinialt: dtini,
+                dtalt: dtalt,
+                tipoalt: 'RESCISÃO',
+                temfalt: temfalt,
+                temlic: temlic,
+                temreducao: temreducao
+            };
+
+            container.innerHTML = renderizarCardHTML(cardDataObject);
+
+            printSection.style.display = 'flex';
+            inputSection.style.display = 'none';
+            btnReopenInput.style.display = 'inline-flex';
+        }
+
+        function renderizarCardHTML(cardDataObject) {
+            const jsonEncoded = encodeURIComponent(JSON.stringify(cardDataObject));
+            const chTexto = cardDataObject.chNum ? `${cardDataObject.chNum} Horas` : '-';
+            const siglaUpper = cardDataObject.sigla.toUpperCase();
+            const isK084ouK085 = siglaUpper.includes('K084') || siglaUpper.includes('K085');
+
+            let htmlRubrica476 = '';
+            if (isK084ouK085) {
+                const tipoDetectado = siglaUpper.includes('K084') ? 'K084' : 'K085';
+                htmlRubrica476 = `<span class="rubrica-aviso">${tipoDetectado} (Sem 476 - DIFERENÇA DE PVR)</span>`;
+            } else {
+                htmlRubrica476 = `<label class="rubrica-item"><input type="checkbox" value="476" onchange="atualizarCalculos('${jsonEncoded}')"> 476 - DIFERENÇA DE PVR</label>`;
+            }
+
+            const faltasObj = formatarOcorrencia(cardDataObject.temfalt);
+            const licencaObj = formatarOcorrencia(cardDataObject.temlic);
+            const reducaoObj = formatarOcorrencia(cardDataObject.temreducao);
+
+            const tipoAltUpper = (cardDataObject.tipoalt || '').toUpperCase();
+            const isTipoIncorreto = tipoAltUpper.includes("REDUÇÃO") || tipoAltUpper.includes("REDUCAO");
+            const classeTipoAlt = isTipoIncorreto ? 'text-sim' : '';
+
+            return `
+                <div class="card" id="${cardDataObject.cardId}" data-json="${jsonEncoded}">
+                    <div class="card-header">
+                        <h2>${cardDataObject.nome}</h2>
+                        <div class="matricula">MATRÍCULA: ${cardDataObject.matricula}</div>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="left-column">
+                            <div class="info-group">
+                                <label>Tipo de Contrato</label>
+                                <span>${formatarTipoContrato(cardDataObject.tipo)}</span>
+                            </div>
+
+                            <div class="info-group">
+                                <label>Vigência</label>
+                                <span>${cardDataObject.dtini} a ${cardDataObject.dtfim}</span>
+                            </div>
+
+                            <div class="info-grid-2">
+                                <div class="info-group">
+                                    <label>Sigla / Tabela</label>
+                                    <span>${cardDataObject.sigla}</span>
+                                </div>
+                                <div class="info-group">
+                                    <label>Carga Horária</label>
+                                    <span>${chTexto}</span>
+                                </div>
+                            </div>
+
+                            <div class="badge-block">
+                                <strong>DOE (Diário Oficial)</strong>
+                                <div class="info-group">
+                                    <label>Data</label>
+                                    <span>${cardDataObject.dtpubl}</span>
+                                </div>
+                                <div class="info-group">
+                                    <label>Página</label>
+                                    <span>${cardDataObject.pagdoe}</span>
+                                </div>
+                                <div class="info-group" style="margin-bottom:0;">
+                                    <label>Caderno</label>
+                                    <span>${cardDataObject.caddoe}</span>
+                                </div>
+                            </div>
+
+                            <div class="badge-block">
+                                <strong>SIGE-CT</strong>
+                                <div class="info-group">
+                                    <label>Data Inicial do Contrato</label>
+                                    <span>${cardDataObject.dtinialt}</span>
+                                </div>
+                                <div class="info-group">
+                                    <label>Data de Alteração do Contrato</label>
+                                    <span>${cardDataObject.dtalt}</span>
+                                </div>
+                                <div class="info-group" style="margin-bottom:0;">
+                                    <label>Tipo Alteração</label>
+                                    <span class="${classeTipoAlt}">${cardDataObject.tipoalt}</span>
+                                </div>
+                            </div>
+
+                            <div class="badge-block">
+                                <strong>OCORRÊNCIAS</strong>
+                                <div class="info-group">
+                                    <label>Faltas</label>
+                                    <span class="${faltasObj.classe}">${faltasObj.texto}</span>
+                                </div>
+                                <div class="info-group">
+                                    <label>Licença</label>
+                                    <span class="${licencaObj.classe}">${licencaObj.texto}</span>
+                                </div>
+                                <div class="info-group" style="margin-bottom:0;">
+                                    <label>Redução</label>
+                                    <span class="${reducaoObj.classe}">${reducaoObj.texto}</span>
+                                </div>
+                            </div>
+
+                            <div class="badge-block">
+                                <strong>VERBAS RESCISÓRIAS</strong>
+                                <div class="rubricas-container">
+                                    <label class="rubrica-item"><input type="checkbox" value="3158" onchange="atualizarCalculos('${jsonEncoded}')"> 3158 - DÉCIMO TERCEIRO</label>
+                                    <label class="rubrica-item"><input type="checkbox" value="321" onchange="atualizarCalculos('${jsonEncoded}')"> 321 - DIFERENÇA DE REMUNERAÇÃO</label>
+                                    ${htmlRubrica476}
+                                    <label class="rubrica-item"><input type="checkbox" value="660" onchange="atualizarCalculos('${jsonEncoded}')"> 660 - DESPESA ANULAR</label>
+                                    <label class="rubrica-item"><input type="checkbox" value="vale" onchange="atualizarCalculos('${jsonEncoded}')"> VALE ALIMENTAÇÃO</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="right-column">
+                            <div class="right-column-title">DEMONSTRATIVO DE CÁLCULOS</div>
+                            <div class="calc-output">
+                                <div style="color: var(--text-gray); font-size: 0.85rem; font-style: italic;">
+                                    Selecione as verbas rescisórias ao lado para visualizar os cálculos correspondentes.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
         function processarDados() {
             const rawText = document.getElementById('inputData').value;
             const container = document.getElementById('resultsContainer');
@@ -1014,132 +1493,7 @@
                     temreducao: cols[29] || ''
                 };
 
-                const jsonEncoded = encodeURIComponent(JSON.stringify(cardDataObject));
-
-                const chTexto = cardDataObject.chNum ? `${cardDataObject.chNum} Horas` : '-';
-                const siglaUpper = cardDataObject.sigla.toUpperCase();
-                const isK084ouK085 = siglaUpper.includes('K084') || siglaUpper.includes('K085');
-
-                let htmlRubrica476 = '';
-                if (isK084ouK085) {
-                    const tipoDetectado = siglaUpper.includes('K084') ? 'K084' : 'K085';
-                    htmlRubrica476 = `<span class="rubrica-aviso">${tipoDetectado} (Sem 476 - DIFERENÇA DE PVR)</span>`;
-                } else {
-                    htmlRubrica476 = `<label class="rubrica-item"><input type="checkbox" value="476" onchange="atualizarCalculos('${jsonEncoded}')"> 476 - DIFERENÇA DE PVR</label>`;
-                }
-
-                const faltasObj = formatarOcorrencia(cardDataObject.temfalt);
-                const licencaObj = formatarOcorrencia(cardDataObject.temlic);
-                const reducaoObj = formatarOcorrencia(cardDataObject.temreducao);
-
-                // Checagem se o arquivo inserido é de REDUÇÃO estando na página de RESCISÃO
-                const tipoAltUpper = cardDataObject.tipoalt.toUpperCase();
-                const isTipoIncorreto = tipoAltUpper.includes("REDUÇÃO") || tipoAltUpper.includes("REDUCAO");
-                const classeTipoAlt = isTipoIncorreto ? 'text-sim' : '';
-
-                const cardHTML = `
-                    <div class="card" id="${cardId}" data-json="${jsonEncoded}">
-                        <div class="card-header">
-                            <h2>${cardDataObject.nome}</h2>
-                            <div class="matricula">MATRÍCULA: ${cardDataObject.matricula}</div>
-                        </div>
-
-                        <div class="card-body">
-                            <div class="left-column">
-                                <div class="info-group">
-                                    <label>Tipo de Contrato</label>
-                                    <span>${formatarTipoContrato(cardDataObject.tipo)}</span>
-                                </div>
-
-                                <div class="info-group">
-                                    <label>Vigência</label>
-                                    <span>${cardDataObject.dtini} a ${cardDataObject.dtfim}</span>
-                                </div>
-
-                                <div class="info-grid-2">
-                                    <div class="info-group">
-                                        <label>Sigla / Tabela</label>
-                                        <span>${cardDataObject.sigla}</span>
-                                    </div>
-                                    <div class="info-group">
-                                        <label>Carga Horária</label>
-                                        <span>${chTexto}</span>
-                                    </div>
-                                </div>
-
-                                <div class="badge-block">
-                                    <strong>DOE (Diário Oficial)</strong>
-                                    <div class="info-group">
-                                        <label>Data</label>
-                                        <span>${cardDataObject.dtpubl}</span>
-                                    </div>
-                                    <div class="info-group">
-                                        <label>Página</label>
-                                        <span>${cardDataObject.pagdoe}</span>
-                                    </div>
-                                    <div class="info-group" style="margin-bottom:0;">
-                                        <label>Caderno</label>
-                                        <span>${cardDataObject.caddoe}</span>
-                                    </div>
-                                </div>
-
-                                <div class="badge-block">
-                                    <strong>SIGE-CT</strong>
-                                    <div class="info-group">
-                                        <label>Data Inicial do Contrato</label>
-                                        <span>${cardDataObject.dtinialt}</span>
-                                    </div>
-                                    <div class="info-group">
-                                        <label>Data de Alteração do Contrato</label>
-                                        <span>${cardDataObject.dtalt}</span>
-                                    </div>
-                                    <div class="info-group" style="margin-bottom:0;">
-                                        <label>Tipo Alteração</label>
-                                        <span class="${classeTipoAlt}">${cardDataObject.tipoalt}</span>
-                                    </div>
-                                </div>
-
-                                <div class="badge-block">
-                                    <strong>OCORRÊNCIAS</strong>
-                                    <div class="info-group">
-                                        <label>Faltas</label>
-                                        <span class="${faltasObj.classe}">${faltasObj.texto}</span>
-                                    </div>
-                                    <div class="info-group">
-                                        <label>Licença</label>
-                                        <span class="${licencaObj.classe}">${licencaObj.texto}</span>
-                                    </div>
-                                    <div class="info-group" style="margin-bottom:0;">
-                                        <label>Redução</label>
-                                        <span class="${reducaoObj.classe}">${reducaoObj.texto}</span>
-                                    </div>
-                                </div>
-
-                                <div class="badge-block">
-                                    <strong>VERBAS RESCISÓRIAS</strong>
-                                    <div class="rubricas-container">
-                                        <label class="rubrica-item"><input type="checkbox" value="3158" onchange="atualizarCalculos('${jsonEncoded}')"> 3158 - DÉCIMO TERCEIRO</label>
-                                        <label class="rubrica-item"><input type="checkbox" value="321" onchange="atualizarCalculos('${jsonEncoded}')"> 321 - DIFERENÇA DE REMUNERAÇÃO</label>
-                                        ${htmlRubrica476}
-                                        <label class="rubrica-item"><input type="checkbox" value="660" onchange="atualizarCalculos('${jsonEncoded}')"> 660 - DESPESA ANULAR</label>
-                                        <label class="rubrica-item"><input type="checkbox" value="vale" onchange="atualizarCalculos('${jsonEncoded}')"> VALE ALIMENTAÇÃO</label>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="right-column">
-                                <div class="right-column-title">DEMONSTRATIVO DE CÁLCULOS</div>
-                                <div class="calc-output">
-                                    <div style="color: var(--text-gray); font-size: 0.85rem; font-style: italic;">
-                                        Selecione as verbas rescisórias ao lado para visualizar os cálculos correspondentes.
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-
-                container.innerHTML += cardHTML;
+                container.innerHTML += renderizarCardHTML(cardDataObject);
             });
 
             if (cardsCount > 0) {
