@@ -45,8 +45,15 @@ function gerarCalculo660Reducao(data, valorRemuneracao = 0, valorPVR = 0, tipoLa
         if (infoRed) baseVencimentoCHATU = infoRed.remuneracao;
     }
 
-    const diferencaVencimento = Math.max(0, baseVencimentoOriginal - baseVencimentoCHATU);
-    const valorDiaDiferenca = diasNoMes > 0 ? (diferencaVencimento / diasNoMes) : 0;
+    // Base salarial final (CHATU)
+    const diferencaVencimento = baseVencimentoCHATU;
+    
+    // Arredonda o valor do dia para 2 casas decimais ANTES de multiplicar pelos dias
+    const valorDiaDiferenca = diasNoMes > 0 
+        ? Math.round((diferencaVencimento / diasNoMes) * 100) / 100 
+        : 0;
+
+    // Cálculo final feito estritamente sobre o valor do dia já arredondado
     const valorTotalFinal = Math.round((valorDiaDiferenca * diasDevolver) * 100) / 100;
 
     const qtdQVF = Math.max(1, parseInt(qvf, 10) || 1);
@@ -57,8 +64,8 @@ function gerarCalculo660Reducao(data, valorRemuneracao = 0, valorPVR = 0, tipoLa
     const htmlDetalhesCalculo = `
         • <strong>Mês de Referência da Alteração (${mesAlt.toString().padStart(2, '0')}/${anoAlt}):</strong> ${diasNoMes} dias<br>
         • <strong>Carga Horária:</strong> De ${chOriginalNum}h para ${chatuNum}h<br>
-        • <strong>Diferença de Base Salarial:</strong> R$ ${diferencaVencimento.toFixed(2).replace('.', ',')}<br>
-        • <strong>Valor Dia da Diferença:</strong> R$ ${valorDiaDiferenca.toFixed(2).replace('.', ',')}<br>
+        • <strong>Base Salarial Final (${chatuNum}h):</strong> R$ ${diferencaVencimento.toFixed(2).replace('.', ',')}<br>
+        • <strong>Valor Dia:</strong> R$ ${valorDiaDiferenca.toFixed(2).replace('.', ',')}<br>
         • <strong>Dias a Devolver:</strong> ${diasDevolver} dias (do dia ${diaAlt} ao dia ${diasNoMes})<br>
         • <strong>Cálculo de Anulação:</strong> R$ ${diferencaVencimento.toFixed(2).replace('.', ',')} / ${diasNoMes} * ${diasDevolver} = <strong>R$ ${valorTotalFinal.toFixed(2).replace('.', ',')}</strong><br>
         • <strong>Divisão QVF:</strong> 
@@ -211,8 +218,15 @@ function atualizarCamposSemRecriarDOM(targetElement) {
         baseVencimentoCHATU = TABELA_K084_K085[chatuNum]?.remuneracao || 0;
     }
 
-    const diferencaVencimento = Math.max(0, baseVencimentoOriginal - baseVencimentoCHATU);
-    const valorDiaDiferenca = diasNoMes > 0 ? (diferencaVencimento / diasNoMes) : 0;
+    // Base salarial final (CHATU)
+    const diferencaVencimento = baseVencimentoCHATU;
+    
+    // Arredonda o valor do dia para 2 casas decimais ANTES de multiplicar pelos dias
+    const valorDiaDiferenca = diasNoMes > 0 
+        ? Math.round((diferencaVencimento / diasNoMes) * 100) / 100 
+        : 0;
+
+    // Cálculo final feito estritamente sobre o valor do dia já arredondado
     const valorTotalFinal = Math.round((valorDiaDiferenca * diasDevolver) * 100) / 100;
     const valorParcela = Math.round((valorTotalFinal / qvfVal) * 100) / 100;
 
