@@ -18,28 +18,38 @@ function gerarCalculo476Reducao(data, valorPVR = 0, tipoLancamento = 'INCLUSÃO'
     const diasNoMes = (mesAlt > 0 && anoAlt > 0) ? new Date(anoAlt, mesAlt, 0).getDate() : 30;
     const diasDevidos = Math.max(0, diaAlt - 1);
 
+    // Carga Horária Reduzida (nova) e Carga Horária de Origem (anterior)
     const chatuNum = parseInt(data.chatu || data.chatuNum || 0, 10);
+    const chOrigemNum = parseInt(data.ch || data.chorig || data.chOrigem || 24, 10);
+
     const siglaUpper = (data.sigla || '').toUpperCase();
 
     let basePVR = valorPVR || 0;
     const eK081ouK082 = siglaUpper.includes('K081') || siglaUpper.includes('K082');
 
+    // Se não informou valorPVR diretamente, busca na tabela pela CH de Origem
     if (basePVR === 0 && eK081ouK082 && typeof TABELA_K081_K082 !== 'undefined') {
-        const info = TABELA_K081_K082[chatuNum];
+        const info = TABELA_K081_K082[chOrigemNum] || TABELA_K081_K082[chatuNum];
         if (info) basePVR = info.pvr || 0;
     }
 
     if (basePVR <= 0) return '';
 
-    const valorDia = diasNoMes > 0 ? (basePVR / diasNoMes) : 0;
+    // Arredonda o valor do dia para 2 casas decimais ANTES de multiplicar pelos dias devidos
+    const valorDia = diasNoMes > 0 
+        ? Math.round((basePVR / diasNoMes) * 100) / 100 
+        : 0;
+
+    // Cálculo final estritamente sobre o valor do dia já arredondado
     const valorTotalFinal = Math.round((valorDia * diasDevidos) * 100) / 100;
 
     const stringCalculosTexto = `(R$ ${basePVR.toFixed(2).replace('.', ',')} / ${diasNoMes} dias * ${diasDevidos} dias = R$ ${valorTotalFinal.toFixed(2).replace('.', ',')})`;
 
     const htmlDetalhesCalculo = `
         • <strong>Mês Vigente (${mesAlt.toString().padStart(2, '0')}/${anoAlt}):</strong> ${diasNoMes} dias<br>
-        • <strong>Carga Horária Reduzida (CHATU):</strong> ${chatuNum}h<br>
-        • <strong>PVR de ${chatuNum}h:</strong> R$ ${basePVR.toFixed(2).replace('.', ',')}<br>
+        • <strong>Carga Horária Origem / Reduzida:</strong> ${chOrigemNum}h → ${chatuNum}h<br>
+        • <strong>PVR de ${chOrigemNum}h:</strong> R$ ${basePVR.toFixed(2).replace('.', ',')}<br>
+        • <strong>Valor Dia PVR:</strong> R$ ${valorDia.toFixed(2).replace('.', ',')}<br>
         • <strong>Dias a Receber:</strong> ${diasDevidos} dia(s) (referente a ${diasDevidos} dia(s) trabalhado(s) antes do dia ${diaAlt})<br>
         • <strong>Cálculo Proporcional PVR:</strong> R$ ${basePVR.toFixed(2).replace('.', ',')} / ${diasNoMes} * ${diasDevidos} = <strong>R$ ${valorTotalFinal.toFixed(2).replace('.', ',')}</strong>
     `;
@@ -51,7 +61,7 @@ function gerarCalculo476Reducao(data, valorPVR = 0, tipoLancamento = 'INCLUSÃO'
             : ' PAGAMENTO BLOQUEADO NA FOLHA';
     }
 
-    const detalhamentoPlanilha = `${textoLancamento} DE PAGAMENTO DE DIFERENÇA REFERENTE A PVR DE ${diasDevidos} DIAS DE CARGA HORÁRIA REDUZIDA (${chatuNum}H) EM ${dtAltStr} ${stringCalculosTexto}${complementoBloqueio}`;
+    const detalhamentoPlanilha = `${textoLancamento} DE PAGAMENTO DE DIFERENÇA REFERENTE A PVR DE ${diasDevidos} DIAS DE CARGA HORÁRIA (${chOrigemNum}H) EM ${dtAltStr} ${stringCalculosTexto}${complementoBloqueio}`;
     const textoJustificativa = `${matricula} ${nome.toUpperCase()} ${detalhamentoPlanilha}`;
     const copyTextId = `copy_text_476_${data.cardId}`;
 
@@ -63,7 +73,7 @@ function gerarCalculo476Reducao(data, valorPVR = 0, tipoLancamento = 'INCLUSÃO'
         doePagina: data.pagdoe || '-',
         doeCaderno: data.caddoe || '-',
         rubrica: '476 (Redução)',
-        valorCalculado: valorTotalFinal,
+        valorCalculado: valorTotalFinal.toFixed(2).replace('.', ','),
         detalhamentoCalculo: detalhamentoPlanilha
     };
 
@@ -165,22 +175,31 @@ function atualizarTexto476(target) {
 
     const diasNoMes = (mesAlt > 0 && anoAlt > 0) ? new Date(anoAlt, mesAlt, 0).getDate() : 30;
     const diasDevidos = Math.max(0, diaAlt - 1);
+
     const chatuNum = parseInt(data.chatu || data.chatuNum || 0, 10);
+    const chOrigemNum = parseInt(data.ch || data.chorig || data.chOrigem || 24, 10);
+
     const siglaUpper = (data.sigla || '').toUpperCase();
 
     let basePVR = 0;
     if (siglaUpper.includes('K081') || siglaUpper.includes('K082')) {
-        if (typeof TABELA_K081_K082 !== 'undefined' && TABELA_K081_K082[chatuNum]) {
-            basePVR = TABELA_K081_K082[chatuNum].pvr || 0;
+        if (typeof TABELA_K081_K082 !== 'undefined') {
+            const info = TABELA_K081_K082[chOrigemNum] || TABELA_K081_K082[chatuNum];
+            if (info) basePVR = info.pvr || 0;
         }
     }
 
-    const valorDia = diasNoMes > 0 ? (basePVR / diasNoMes) : 0;
+    // Arredonda o valor do dia para 2 casas decimais ANTES de multiplicar pelos dias devidos
+    const valorDia = diasNoMes > 0 
+        ? Math.round((basePVR / diasNoMes) * 100) / 100 
+        : 0;
+
+    // Cálculo final feito estritamente sobre o valor do dia já arredondado
     const valorTotalFinal = Math.round((valorDia * diasDevidos) * 100) / 100;
 
     const stringCalculosTexto = `(R$ ${basePVR.toFixed(2).replace('.', ',')} / ${diasNoMes} dias * ${diasDevidos} dias = R$ ${valorTotalFinal.toFixed(2).replace('.', ',')})`;
     let complementoBloqueio = bloqueado ? (numFolha.trim() !== '' ? ` PAGAMENTO BLOQUEADO NA FOLHA ${numFolha.trim()}` : ' PAGAMENTO BLOQUEADO NA FOLHA') : '';
-    const detalhamentoPlanilha = `${tipoLancamento.toUpperCase()} DE PAGAMENTO DE DIFERENÇA REFERENTE A PVR DE ${diasDevidos} DIAS DE CARGA HORÁRIA REDUZIDA (${chatuNum}H) EM ${dtAltStr} ${stringCalculosTexto}${complementoBloqueio}`;
+    const detalhamentoPlanilha = `${tipoLancamento.toUpperCase()} DE PAGAMENTO DE DIFERENÇA REFERENTE A PVR DE ${diasDevidos} DIAS DE CARGA HORÁRIA (${chOrigemNum}H) EM ${dtAltStr} ${stringCalculosTexto}${complementoBloqueio}`;
 
     let rawMatricula = String(data.matricula || '').trim().replace(/^22200[0-9]/, '');
     const copyBox = cardItem.querySelector(`#copy_text_476_${cardId}`);
@@ -198,7 +217,7 @@ function atualizarTexto476(target) {
             doePagina: data.pagdoe || '-',
             doeCaderno: data.caddoe || '-',
             rubrica: '476 (Redução)',
-            valorCalculado: valorTotalFinal,
+            valorCalculado: valorTotalFinal.toFixed(2).replace('.', ','),
             detalhamentoCalculo: detalhamentoPlanilha
         };
         chkRelatorio.dataset.export = encodeURIComponent(JSON.stringify(dadosExportacao));
