@@ -18,43 +18,39 @@ function gerarCalculo321Reducao(data, valorRemuneracao, tipoLancamento = 'INCLUS
     const diasNoMes = (mesAlt > 0 && anoAlt > 0) ? new Date(anoAlt, mesAlt, 0).getDate() : 30;
     const diasDevidos = Math.max(0, diaAlt - 1);
 
-    // CHATU: Carga Horária Reduzida (nova)
-    const chatuNum = parseInt(data.chatu || data.chatuNum || 0, 10);
-    
-    // CH Origem: Carga Horária cumprida antes da alteração (ex: 24h, 30h, 40h)
-    const chOrigemNum = parseInt(data.ch || data.chorig || data.chOrigem || 24, 10);
-    
+    const chInicialNum = parseInt(data.ch || data.chant || data.chinic || 0, 10);
+    const chReduzidaNum = parseInt(data.chatu || data.chreduz || 0, 10);
+    const chFinalNum = parseInt(data.chfin || (chInicialNum - chReduzidaNum) || 0, 10);
+
     const siglaUpper = (data.sigla || '').toUpperCase();
 
     let baseRemuneracao = valorRemuneracao || 0;
     const eK081ouK082 = siglaUpper.includes('K081') || siglaUpper.includes('K082');
     const eK084ouK085 = siglaUpper.includes('K084') || siglaUpper.includes('K085');
 
-    // Se não passou valorRemuneracao explicito, busca a remuneração da CH de ORIGEM
     if (baseRemuneracao === 0) {
         if (eK081ouK082 && typeof TABELA_K081_K082 !== 'undefined') {
-            const info = TABELA_K081_K082[chOrigemNum] || TABELA_K081_K082[chatuNum];
+            const info = TABELA_K081_K082[chInicialNum];
             if (info) baseRemuneracao = info.remuneracao;
         } else if (eK084ouK085 && typeof TABELA_K084_K085 !== 'undefined') {
-            const info = TABELA_K084_K085[chOrigemNum] || TABELA_K084_K085[chatuNum];
+            const info = TABELA_K084_K085[chInicialNum];
             if (info) baseRemuneracao = info.remuneracao;
         }
     }
 
-    // 1. Arredonda o valor do dia para 2 casas decimais
+    // Arredonda o valor do dia SEMPRE para cima (ex: 39.2223 -> 39.23)
     const valorDia = diasNoMes > 0 
-        ? Math.round((baseRemuneracao / diasNoMes) * 100) / 100 
+        ? Math.ceil((baseRemuneracao / diasNoMes) * 100) / 100 
         : 0;
 
-    // 2. Calcula o valor total proporcional
     const valorTotalFinal = Math.round((valorDia * diasDevidos) * 100) / 100;
 
     const stringCalculosTexto = `(R$ ${baseRemuneracao.toFixed(2).replace('.', ',')} / ${diasNoMes} dias * ${diasDevidos} dias = R$ ${valorTotalFinal.toFixed(2).replace('.', ',')})`;
 
     const htmlDetalhesCalculo = `
         • <strong>Mês Vigente (${mesAlt.toString().padStart(2, '0')}/${anoAlt}):</strong> ${diasNoMes} dias<br>
-        • <strong>Carga Horária de Origem / Reduzida:</strong> ${chOrigemNum}h → ${chatuNum}h<br>
-        • <strong>Remuneração Base (${chOrigemNum}h):</strong> R$ ${baseRemuneracao.toFixed(2).replace('.', ',')}<br>
+        • <strong>Carga Horária (Inicial → Final):</strong> ${chInicialNum}h → ${chFinalNum}h (Redução de ${chReduzidaNum}h)<br>
+        • <strong>Remuneração Base (${chInicialNum}h):</strong> R$ ${baseRemuneracao.toFixed(2).replace('.', ',')}<br>
         • <strong>Valor Dia:</strong> R$ ${valorDia.toFixed(2).replace('.', ',')}<br>
         • <strong>Dias a Receber:</strong> ${diasDevidos} dia(s) (referente a ${diasDevidos} dia(s) trabalhado(s) antes do dia ${diaAlt})<br>
         • <strong>Cálculo Proporcional:</strong> R$ ${baseRemuneracao.toFixed(2).replace('.', ',')} / ${diasNoMes} * ${diasDevidos} = <strong>R$ ${valorTotalFinal.toFixed(2).replace('.', ',')}</strong>
@@ -67,7 +63,7 @@ function gerarCalculo321Reducao(data, valorRemuneracao, tipoLancamento = 'INCLUS
             : ' PAGAMENTO BLOQUEADO NA FOLHA';
     }
 
-    const detalhamentoPlanilha = `${textoLancamento} DE PAGAMENTO DE DIFERENÇA REFERENTE A REMUNERAÇÃO DE ${diasDevidos} DIAS DE CARGA HORÁRIA (${chOrigemNum}H) EM ${dtAltStr} ${stringCalculosTexto}${complementoBloqueio}`;
+    const detalhamentoPlanilha = `${textoLancamento} DE PAGAMENTO DE DIFERENÇA REFERENTE A REMUNERAÇÃO DE ${diasDevidos} DIAS DE CARGA HORÁRIA (${chInicialNum}H) EM ${dtAltStr} ${stringCalculosTexto}${complementoBloqueio}`;
     const textoJustificativa = `${matricula} ${nome.toUpperCase()} ${detalhamentoPlanilha}`;
     const copyTextId = `copy_text_321_${data.cardId}`;
 
