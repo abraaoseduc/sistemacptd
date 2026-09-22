@@ -23,8 +23,8 @@ function gerarCalculo660(data, valorRemuneracao, valorPVR = 0, tipoLancamento = 
 
     // Base de cálculo: Remuneração + PVR (Vencimento)
     const baseCalculo = valorRemuneracao + valorPVR;
-    const valorDia = diasNoMes > 0 ? (baseCalculo / diasNoMes) : 0;
-    const valorTotalFinal = Math.round((valorDia * diasDevolver) * 100) / 100;
+    const valorDia = diasNoMes > 0 ? Math.ceil((baseCalculo / diasNoMes) * 100) / 100 : 0;
+    const valorTotalFinal = valorDia * diasDevolver;
 
     // String detalhada dos cálculos
     const stringCalculosTexto = `(R$ ${baseCalculo.toFixed(2).replace('.', ',')} / ${diasNoMes} dias * ${diasDevolver} dias = R$ ${valorTotalFinal.toFixed(2).replace('.', ',')})`;

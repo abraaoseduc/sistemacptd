@@ -1,8 +1,8 @@
 function gerarCalculo3158(data, vencimento) {
     const mesesTrabalhados = calcularMesesTrabalhados(data.dtini, data.dtalt);
     const umDozeAvosBruto = vencimento / 12;
-    const umDozeAvosArred = Math.round(umDozeAvosBruto * 100) / 100;
-    const valorTotal3158 = Math.round((umDozeAvosArred * mesesTrabalhados) * 100) / 100;
+    const umDozeAvosArred = Math.ceil(umDozeAvosBruto * 100) / 100;
+    const valorTotal3158 = umDozeAvosArred * mesesTrabalhados;
 
     const memoriaCalculoStr = `${formatarMoeda(vencimento)} / 12 = ${formatarMoeda(umDozeAvosArred)} * ${mesesTrabalhados} MESES = ${formatarMoeda(valorTotal3158)}`;
     

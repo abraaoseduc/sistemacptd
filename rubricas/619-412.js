@@ -7,7 +7,7 @@ function renderizarCardVA(cardId, data) {
 
     const valorDiario = 16.96;
     const diasCalc = state.diasCalculo;
-    const totalCalcVal = Math.round((diasCalc * valorDiario) * 100) / 100;
+    const totalCalcVal = diasCalc * valorDiario;
     const memoriaStr = `${diasCalc} DIAS X R$ 16,96 = ${formatarMoeda(totalCalcVal)}`;
 
     // 1. Atualiza a exibição da multiplicação e resultado
@@ -275,7 +275,7 @@ function gerarCalculoValeAlimentacao(data) {
     const isAlteracao = state.tipoOperacao === 'ALTERAÇÃO';
 
     const diasCalc = state.diasCalculo;
-    const totalCalcVal = Math.round((diasCalc * valorDiario) * 100) / 100;
+    const totalCalcVal = diasCalc * valorDiario;
     const memoriaStr = `${diasCalc} DIAS X R$ 16,96 = ${formatarMoeda(totalCalcVal)}`;
 
     const tipoOpText = state.tipoOperacao || 'INCLUSÃO';

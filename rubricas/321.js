@@ -19,8 +19,8 @@ function gerarCalculo321(data, valorRemuneracao, tipoLancamento = 'INCLUSÃO', b
 
     // Mês da alteração
     const diasNoMesAlt = (mesAlt > 0 && anoAlt > 0) ? new Date(anoAlt, mesAlt, 0).getDate() : 30;
-    const valorDiaAlt = valorRemuneracao / diasNoMesAlt;
-    const totalMesAlt = Math.round((valorDiaAlt * diaAlt) * 100) / 100;
+    const valorDiaAlt = Math.ceil((valorRemuneracao / diasNoMesAlt) * 100) / 100;
+    const totalMesAlt = valorDiaAlt * diaAlt;
 
     let valorTotalFinal = totalMesAlt;
     let htmlDetalhesCalculo = '';
@@ -49,10 +49,10 @@ function gerarCalculo321(data, valorRemuneracao, tipoLancamento = 'INCLUSÃO', b
 
         const diasNoMesAnt = new Date(anoAnt, mesAnt, 0).getDate();
         const diasTrabalhadosAnt = (diasNoMesAnt - diaIni) + 1;
-        const valorDiaAnt = valorRemuneracao / diasNoMesAnt;
-        const totalMesAnt = Math.round((valorDiaAnt * diasTrabalhadosAnt) * 100) / 100;
+        const valorDiaAnt = Math.ceil((valorRemuneracao / diasNoMesAnt) * 100) / 100;
+        const totalMesAnt = valorDiaAnt * diasTrabalhadosAnt;
 
-        valorTotalFinal = Math.round((totalMesAnt + totalMesAlt) * 100) / 100;
+        valorTotalFinal = totalMesAnt + totalMesAlt;
 
         const exprAnt = `(R$ ${valorRemuneracao.toFixed(2).replace('.', ',')} / ${diasNoMesAnt} dias * ${diasTrabalhadosAnt} dias = R$ ${totalMesAnt.toFixed(2).replace('.', ',')})`;
         const exprAlt = `(R$ ${valorRemuneracao.toFixed(2).replace('.', ',')} / ${diasNoMesAlt} dias * ${diaAlt} dias = R$ ${totalMesAlt.toFixed(2).replace('.', ',')})`;
@@ -65,7 +65,7 @@ function gerarCalculo321(data, valorRemuneracao, tipoLancamento = 'INCLUSÃO', b
             • <strong>Cálculo Total:</strong> ${stringCalculosTexto}
         `;
     } else {
-        valorTotalFinal = Math.round(totalMesAlt * 100) / 100;
+        valorTotalFinal = totalMesAlt;
         stringCalculosTexto = `(R$ ${valorRemuneracao.toFixed(2).replace('.', ',')} / ${diasNoMesAlt} dias * ${diaAlt} dias = R$ ${valorTotalFinal.toFixed(2).replace('.', ',')})`;
 
         htmlDetalhesCalculo = `
