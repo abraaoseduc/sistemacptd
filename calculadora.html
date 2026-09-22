@@ -663,7 +663,7 @@
             }
 
             const valor1_12 = Math.ceil((baseAtual.vencimento / 12) * 100) / 100;
-            const total = Math.ceil((valor1_12 * meses) * 100) / 100;
+            const total = valor1_12 * meses;
 
             memEl.innerText = `${formatarMoeda(baseAtual.vencimento)} / 12 = ${formatarMoeda(valor1_12)} x ${meses} Mês(es)`;
             resEl.innerText = meses > 0 ? `Total a Pagar: ${formatarMoeda(total)}` : "Informe a quantidade de meses.";
@@ -683,7 +683,7 @@
             }
 
             const valorDia = Math.ceil((baseAtual.remuneracao / diasMes) * 100) / 100;
-            const total = Math.ceil((valorDia * diasToPay) * 100) / 100;
+            const total = valorDia * diasToPay;
 
             memEl.innerText = `${formatarMoeda(baseAtual.remuneracao)} / ${diasMes} Dias = ${formatarMoeda(valorDia)} x ${diasToPay} Dia(s)`;
             resEl.innerText = diasToPay > 0 ? `Total a Pagar: ${formatarMoeda(total)}` : "Informe a quantidade de dias.";
@@ -703,7 +703,7 @@
             }
 
             const valorDia = Math.ceil((baseAtual.pvr / diasMes) * 100) / 100;
-            const total = Math.ceil((valorDia * diasToPay) * 100) / 100;
+            const total = valorDia * diasToPay;
 
             memEl.innerText = `${formatarMoeda(baseAtual.pvr)} / ${diasMes} Dias = ${formatarMoeda(valorDia)} x ${diasToPay} Dia(s)`;
             resEl.innerText = diasToPay > 0 ? `Total a Pagar: ${formatarMoeda(total)}` : "Informe a quantidade de dias.";
@@ -723,7 +723,7 @@
             }
 
             const valorDia = Math.ceil((baseAtual.vencimento / diasMes) * 100) / 100;
-            const total = Math.ceil((valorDia * diasToPay) * 100) / 100;
+            const total = valorDia * diasToPay;
 
             memEl.innerText = `${formatarMoeda(baseAtual.vencimento)} / ${diasMes} Dias = ${formatarMoeda(valorDia)} x ${diasToPay} Dia(s)`;
             resEl.innerText = diasToPay > 0 ? `Total a Pagar: ${formatarMoeda(total)}` : "Informe a quantidade de dias.";
@@ -873,7 +873,7 @@
             const resEl = document.getElementById('res_va');
             const memEl = document.getElementById('mem_va');
 
-            const total = Math.ceil((valorDia * totalDias) * 100) / 100;
+            const total = valorDia * totalDias;
 
             memEl.innerText = `${totalDias} Dia(s) x ${formatarMoeda(valorDia)}`;
             resEl.innerText = totalDias > 0 ? `Total a Pagar: ${formatarMoeda(total)}` : "Selecione ao menos um mês para calcular.";
