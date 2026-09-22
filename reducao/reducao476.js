@@ -39,7 +39,7 @@ function gerarCalculo476Reducao(data, valorPVR = 0, tipoLancamento = 'INCLUSÃO'
         ? Math.ceil((basePVR / diasNoMes) * 100) / 100 
         : 0;
 
-    const valorTotalFinal = Math.round((valorDia * diasDevidos) * 100) / 100;
+    const valorTotalFinal = valorDia * diasDevidos;
 
     const stringCalculosTexto = `(R$ ${basePVR.toFixed(2).replace('.', ',')} / ${diasNoMes} dias * ${diasDevidos} dias = R$ ${valorTotalFinal.toFixed(2).replace('.', ',')})`;
 
@@ -180,7 +180,7 @@ function atualizarTexto476(target) {
         ? Math.ceil((basePVR / diasNoMes) * 100) / 100 
         : 0;
 
-    const valorTotalFinal = Math.round((valorDia * diasDevidos) * 100) / 100;
+    const valorTotalFinal = valorDia * diasDevidos;
 
     const stringCalculosTexto = `(R$ ${basePVR.toFixed(2).replace('.', ',')} / ${diasNoMes} dias * ${diasDevidos} dias = R$ ${valorTotalFinal.toFixed(2).replace('.', ',')})`;
     let complementoBloqueio = bloqueado ? (numFolha.trim() !== '' ? ` PAGAMENTO BLOQUEADO NA FOLHA ${numFolha.trim()}` : ' PAGAMENTO BLOQUEADO NA FOLHA') : '';

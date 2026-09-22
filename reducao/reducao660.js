@@ -54,7 +54,7 @@ function gerarCalculo660Reducao(data, valorRemuneracao = 0, valorPVR = 0, tipoLa
         : 0;
 
     // Cálculo final feito estritamente sobre o valor do dia já arredondado
-    const valorTotalFinal = Math.round((valorDiaDiferenca * diasDevolver) * 100) / 100;
+    const valorTotalFinal = valorDiaDiferenca * diasDevolver;
 
     const qtdQVF = Math.max(1, parseInt(qvf, 10) || 1);
     const valorParcela = Math.round((valorTotalFinal / qtdQVF) * 100) / 100;
@@ -227,7 +227,7 @@ function atualizarCamposSemRecriarDOM(targetElement) {
         : 0;
 
     // Cálculo final feito estritamente sobre o valor do dia já arredondado
-    const valorTotalFinal = Math.round((valorDiaDiferenca * diasDevolver) * 100) / 100;
+    const valorTotalFinal = valorDiaDiferenca * diasDevolver;
     const valorParcela = Math.round((valorTotalFinal / qvfVal) * 100) / 100;
 
     // Atualização de elementos na tela

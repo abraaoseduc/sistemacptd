@@ -43,7 +43,7 @@ function gerarCalculo321Reducao(data, valorRemuneracao, tipoLancamento = 'INCLUS
         ? Math.ceil((baseRemuneracao / diasNoMes) * 100) / 100 
         : 0;
 
-    const valorTotalFinal = Math.round((valorDia * diasDevidos) * 100) / 100;
+    const valorTotalFinal = valorDia * diasDevidos;
 
     const stringCalculosTexto = `(R$ ${baseRemuneracao.toFixed(2).replace('.', ',')} / ${diasNoMes} dias * ${diasDevidos} dias = R$ ${valorTotalFinal.toFixed(2).replace('.', ',')})`;
 
