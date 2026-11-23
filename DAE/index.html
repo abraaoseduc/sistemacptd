@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Devolução - DAE | Sistema CPTD</title>
-    <!-- Biblioteca html2pdf para download direto em PDF -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- Biblioteca jsPDF nativa para geração vetorial de PDF multipáginas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <!-- Bibliotecas para ler, preencher e mesclar páginas do DEVOLUCAO-DAE.docx -->
     <script src="https://unpkg.com/pizzip@3.1.4/dist/pizzip.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/docxtemplater/3.42.0/docxtemplater.js"></script>
@@ -121,7 +121,6 @@
             display: none !important;
         }
 
-        /* Layout dinâmico: 2 colunas no Manual, 1 coluna larga empilhada na Planilha */
         .workspace-manual {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -318,172 +317,126 @@
         }
 
         .btn {
-            padding: 0.85rem 1.2rem;
+            padding: 0.9rem 1.4rem;
             border: none;
             border-radius: 8px;
-            font-size: 0.95rem;
+            font-size: 1rem;
             font-weight: 700;
             cursor: pointer;
             transition: all 0.2s;
-            flex: 1;
-            min-width: 160px;
             text-align: center;
         }
 
-        .btn-docx {
-            background-color: var(--tertiary);
-            color: #ffffff;
-        }
-
-        .btn-docx:hover {
-            background-color: var(--tertiary-hover);
-        }
-
-        .btn-pdf {
+        .btn-download-main {
             background-color: var(--primary);
             color: #ffffff;
+            flex: 1;
+            min-width: 220px;
+            box-shadow: 0 4px 10px rgba(22, 163, 74, 0.25);
         }
 
-        .btn-pdf:hover {
+        .btn-download-main:hover {
             background-color: var(--primary-hover);
+            transform: translateY(-1px);
         }
 
         .btn-clear {
             background-color: #e2e8f0;
             color: #334155;
-            flex: 0.35;
-            min-width: 95px;
+            min-width: 110px;
         }
 
         .btn-clear:hover {
             background-color: #cbd5e1;
         }
 
-        /* Container do PDF posicionado em segundo plano apenas no momento da geração */
-        #pdf-wrapper {
-            display: none;
+        /* Modal de Escolha de Formato (DOCX ou PDF) */
+        .modal-overlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            z-index: -9999;
-            background: #ffffff;
+            inset: 0;
+            background-color: rgba(15, 23, 42, 0.55);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 1rem;
         }
 
-        .pdf-page {
-            width: 210mm;
-            height: 296.5mm;
-            padding: 16mm 22mm;
-            background: #ffffff;
-            color: #000000;
-            font-family: Arial, Helvetica, sans-serif;
-            font-size: 11.5pt;
-            line-height: 1.5;
-            box-sizing: border-box;
-            overflow: hidden;
-        }
-
-        .pdf-page-break {
-            page-break-before: always;
-            break-before: page;
-        }
-
-        .pdf-header {
-            text-align: center;
-            margin-bottom: 16px;
-        }
-
-        .pdf-header img {
-            max-height: 80px;
-            width: auto;
-            object-fit: contain;
-        }
-
-        .pdf-header-fallback .gov-title {
-            font-size: 14pt;
-            font-weight: bold;
-            color: #334155;
-        }
-
-        .pdf-header-fallback .sec-title {
-            font-size: 10.5pt;
-            font-weight: bold;
-            color: #475569;
-        }
-
-        .pdf-doc-title {
-            text-align: center;
-            font-size: 12.5pt;
-            font-weight: bold;
-            margin: 12px 0 22px 0;
-            text-decoration: underline;
-        }
-
-        .pdf-section-title {
-            font-weight: bold;
-            text-decoration: underline;
-            margin-top: 18px;
-            margin-bottom: 8px;
-            font-size: 11.5pt;
-        }
-
-        .pdf-field {
-            margin-bottom: 7px;
-        }
-
-        .pdf-justificativa {
-            white-space: pre-wrap;
-            text-align: justify;
-            margin-bottom: 12px;
-            min-height: 36px;
-        }
-
-        .pdf-valor {
-            margin-top: 8px;
-            margin-bottom: 14px;
-        }
-
-        .pdf-tutorial-link {
-            display: inline-block;
-            font-weight: bold;
-            color: #1155cc;
-            text-decoration: underline;
-            margin: 4px 0 6px 0;
-        }
-
-        .pdf-aviso {
-            font-size: 10.5pt;
-            margin-top: 4px;
-            margin-bottom: 35px;
-        }
-
-        .pdf-assinatura {
-            margin-top: 40px;
-            text-align: left;
-            width: 80%;
-        }
-
-        .pdf-assinatura-titulo {
-            margin-bottom: 18px;
-        }
-
-        .pdf-assinatura-tecnico {
-            font-weight: normal;
-            margin-bottom: 4px;
-            min-height: 20px;
-        }
-
-        .pdf-assinatura-linha {
-            border-top: 1.5px solid #000000;
+        .modal-box {
+            background-color: #ffffff;
+            border-radius: 14px;
+            padding: 2rem;
+            max-width: 440px;
             width: 100%;
-            margin-bottom: 16px;
+            box-shadow: 0 20px 35px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            border-top: 5px solid var(--primary);
         }
 
-        .pdf-rodape-institucional {
-            font-weight: bold;
-            font-style: italic;
-            font-size: 10.5pt;
-            line-height: 1.45;
-            color: #000000;
+        .modal-box h3 {
+            font-size: 1.3rem;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+        }
+
+        .modal-box p {
+            font-size: 0.92rem;
+            color: #475569;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-options {
+            display: flex;
+            flex-direction: column;
+            gap: 0.85rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .btn-format-docx {
+            background-color: var(--tertiary);
+            color: #ffffff;
+            padding: 0.95rem 1.2rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-format-docx:hover {
+            background-color: var(--tertiary-hover);
+        }
+
+        .btn-format-pdf {
+            background-color: #dc2626;
+            color: #ffffff;
+            padding: 0.95rem 1.2rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-format-pdf:hover {
+            background-color: #b91c1c;
+        }
+
+        .btn-modal-cancel {
+            background: transparent;
+            border: none;
+            color: #64748b;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            padding: 0.4rem 1rem;
+        }
+
+        .btn-modal-cancel:hover {
+            color: #1e293b;
+            text-decoration: underline;
         }
     </style>
 </head>
@@ -508,7 +461,7 @@
         </button>
     </div>
 
-    <!-- ÁREA PRINCIPAL (Adapta o layout conforme o modo escolhido) -->
+    <!-- ÁREA PRINCIPAL -->
     <div id="workspaceGrid" class="workspace-manual section-hidden">
         
         <!-- BLOCO 1: ENTRADA DE DADOS -->
@@ -562,7 +515,7 @@
                 </div>
             </div>
 
-            <!-- Card do Modo Planilha (Largura total para melhor visualização) -->
+            <!-- Card do Modo Planilha -->
             <div id="cardPlanilha" class="card section-hidden">
                 <h2>1. Importação via Planilha (Excel / Google Sheets)</h2>
                 
@@ -607,26 +560,41 @@
             </div>
         </div>
 
-        <!-- BLOCO 2: TEXTO COMPILADO & GERAÇÃO DE ARQUIVO (Sempre visível) -->
+        <!-- BLOCO 2: TEXTO COMPILADO & BOTÃO ÚNICO DE DOWNLOAD -->
         <div class="card">
-            <h2>2. Texto Compilado & Geração de Arquivo</h2>
+            <h2>2. Texto Compilado & Geração de Relatório</h2>
             <p style="font-size: 0.88rem; color: #475569; margin-bottom: 0.75rem;">
-                Confira os dados compilados abaixo. O botão <strong>Baixar Word (.docx)</strong> utiliza diretamente o seu modelo oficial <code>DEVOLUCAO-DAE.docx</code> da pasta.
+                Confira os dados compilados abaixo. Você pode ajustar qualquer detalhe diretamente no texto antes de clicar em <strong>Baixar Relatório</strong>.
             </p>
 
             <textarea id="textoCompilado" class="compiled-box"></textarea>
 
             <div class="actions">
                 <button type="button" class="btn btn-clear" onclick="limparTudo()">Limpar</button>
-                <button type="button" class="btn btn-docx" onclick="baixarDOCX()">Baixar Word (.docx)</button>
-                <button type="button" class="btn btn-pdf" onclick="baixarPDF()">Baixar PDF</button>
+                <button type="button" class="btn btn-download-main" onclick="abrirModalFormato()">Baixar Relatório</button>
             </div>
         </div>
 
     </div>
 
-    <!-- Container oculto onde as páginas A4 são renderizadas para o PDF -->
-    <div id="pdf-wrapper"></div>
+    <!-- Modal de Escolha do Formato (DOCX ou PDF) -->
+    <div id="modalFormato" class="modal-overlay section-hidden" onclick="fecharModalSeFora(event)">
+        <div class="modal-box">
+            <h3>Escolha o formato do relatório</h3>
+            <p id="modalResumoTexto">Selecione em qual formato deseja baixar o arquivo:</p>
+            
+            <div class="modal-options">
+                <button type="button" class="btn-format-docx" onclick="confirmarDownload('docx')">
+                    Baixar em Word (.docx)
+                </button>
+                <button type="button" class="btn-format-pdf" onclick="confirmarDownload('pdf')">
+                    Baixar em PDF (.pdf)
+                </button>
+            </div>
+
+            <button type="button" class="btn-modal-cancel" onclick="fecharModalFormato()">Cancelar</button>
+        </div>
+    </div>
 
     <script>
         let modoAtual = '';
@@ -772,7 +740,6 @@ Célula de Folha de Pagamento – CEFOP`;
             });
         }
 
-        /* Processamento de colagem de planilha */
         function parseTSV(texto) {
             const linhas = [];
             let linhaAtual = [];
@@ -921,13 +888,45 @@ Célula de Folha de Pagamento – CEFOP`;
             }
         }
 
-        /* GERAÇÃO DE WORD (.DOCX) USANDO O SEU ARQUIVO DEVOLUCAO-DAE.docx (1 OU VÁRIAS PÁGINAS) */
-        async function baixarDOCX() {
+        /* CONTROLE DO MODAL DE ESCOLHA DE FORMATO */
+        function abrirModalFormato() {
             const listaRegistros = extrairRegistrosDaCaixaCompilada();
             if (listaRegistros.length === 0) {
-                alert('Preencha ou cole pelo menos um registro antes de baixar.');
+                alert('Preencha ou cole pelo menos um registro antes de baixar o relatório.');
                 return;
             }
+
+            const resumo = document.getElementById('modalResumoTexto');
+            resumo.textContent = listaRegistros.length === 1
+                ? '1 relatório pronto (1 página). Escolha o formato desejado:'
+                : `${listaRegistros.length} relatórios prontos (${listaRegistros.length} páginas em um único arquivo). Escolha o formato desejado:`;
+
+            document.getElementById('modalFormato').classList.remove('section-hidden');
+        }
+
+        function fecharModalFormato() {
+            document.getElementById('modalFormato').classList.add('section-hidden');
+        }
+
+        function fecharModalSeFora(event) {
+            if (event.target.id === 'modalFormato') {
+                fecharModalFormato();
+            }
+        }
+
+        function confirmarDownload(formato) {
+            fecharModalFormato();
+            if (formato === 'docx') {
+                baixarDOCX();
+            } else {
+                baixarPDF();
+            }
+        }
+
+        /* GERAÇÃO DE WORD (.DOCX) USANDO O DEVOLUCAO-DAE.docx */
+        async function baixarDOCX() {
+            const listaRegistros = extrairRegistrosDaCaixaCompilada();
+            if (listaRegistros.length === 0) return;
 
             try {
                 const response = await fetch('DEVOLUCAO-DAE.docx?v=' + new Date().getTime());
@@ -989,89 +988,201 @@ Célula de Folha de Pagamento – CEFOP`;
             }
         }
 
-        /* GERAÇÃO DE PDF MULTIPÁGINAS CORRIGIDA */
+        /* Carrega a imagem do brasão em Base64 se existir na pasta DAE */
+        function carregarBrasaoBase64() {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.crossOrigin = 'Anonymous';
+                img.onload = function () {
+                    try {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0);
+                        resolve({
+                            dataUrl: canvas.toDataURL('image/png'),
+                            width: img.width,
+                            height: img.height
+                        });
+                    } catch (e) {
+                        resolve(null);
+                    }
+                };
+                img.onerror = function () {
+                    resolve(null);
+                };
+                img.src = 'brasao-seduc.png?v=' + new Date().getTime();
+            });
+        }
+
+        /* GERAÇÃO VETORIAL NATIVA DE PDF MULTIPÁGINAS VIA jsPDF */
         async function baixarPDF() {
             const listaRegistros = extrairRegistrosDaCaixaCompilada();
-            if (listaRegistros.length === 0) {
-                alert('Preencha ou cole pelo menos um registro antes de baixar.');
+            if (listaRegistros.length === 0) return;
+
+            if (!window.jspdf || !window.jspdf.jsPDF) {
+                alert('A biblioteca de PDF ainda está carregando. Aguarde um segundo e tente novamente.');
                 return;
             }
 
-            const wrapper = document.getElementById('pdf-wrapper');
-            wrapper.innerHTML = '';
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({
+                orientation: 'portrait',
+                unit: 'mm',
+                format: 'a4'
+            });
+
+            const brasao = await carregarBrasaoBase64();
+            const pageWidth = 210;
+            const marginLeft = 22;
+            const marginRight = 22;
+            const maxTextWidth = pageWidth - marginLeft - marginRight;
+
+            const escreverSublinhado = (texto, x, y, options = {}) => {
+                doc.text(texto, x, y, options);
+                const largura = doc.getTextWidth(texto);
+                let startX = x;
+                if (options.align === 'center') {
+                    startX = x - largura / 2;
+                }
+                doc.setLineWidth(0.35);
+                doc.line(startX, y + 1, startX + largura, y + 1);
+            };
 
             listaRegistros.forEach((dados, index) => {
-                const page = document.createElement('div');
-                page.className = index > 0 ? 'pdf-page pdf-page-break' : 'pdf-page';
-                page.innerHTML = `
-                    <div class="pdf-header">
-                        <img src="brasao-seduc.png" alt="Governo do Estado do Ceará - Secretaria da Educação" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                        <div class="pdf-header-fallback" style="display: none;">
-                            <div class="gov-title">CEARÁ</div>
-                            <div class="sec-title">GOVERNO DO ESTADO<br>SECRETARIA DA EDUCAÇÃO</div>
-                        </div>
-                    </div>
+                if (index > 0) {
+                    doc.addPage();
+                }
 
-                    <div class="pdf-doc-title">INFORMAÇÕES PARA DEVOLUÇÃO VIA DAE</div>
+                let y = 18;
+                doc.setTextColor(0, 0, 0);
 
-                    <div class="pdf-section-title">* DADOS PESSOAIS</div>
-                    <div class="pdf-field"><strong>CREDE:</strong> ${dados.CREDE}</div>
-                    <div class="pdf-field"><strong>CPF:</strong> ${dados.CPF}</div>
-                    <div class="pdf-field"><strong>MATRÍCULA:</strong> ${dados.MATRICULA}</div>
-                    <div class="pdf-field"><strong>NOME:</strong> ${dados.NOME}</div>
-                    <div class="pdf-field"><strong>CARGA HORÁRIA:</strong> ${dados.CH}</div>
+                // 1. Cabeçalho / Brasão
+                if (brasao) {
+                    const imgH = 22;
+                    const imgW = (brasao.width / brasao.height) * imgH;
+                    doc.addImage(brasao.dataUrl, 'PNG', (pageWidth - imgW) / 2, y, imgW, imgH);
+                    y += imgH + 8;
+                } else {
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(14);
+                    doc.setTextColor(20, 83, 45);
+                    doc.text('CEARÁ', pageWidth / 2, y + 4, { align: 'center' });
+                    y += 10;
 
-                    <div class="pdf-section-title">* JUSTIFICATIVA</div>
-                    <div class="pdf-justificativa">${dados.JUSTIFICATIVA}</div>
-                    <div class="pdf-valor"><strong>VALOR:</strong> ${dados.VALOR}</div>
+                    doc.setFontSize(10.5);
+                    doc.setTextColor(51, 65, 85);
+                    doc.text('GOVERNO DO ESTADO', pageWidth / 2, y, { align: 'center' });
+                    y += 5;
+                    doc.text('SECRETARIA DA EDUCAÇÃO', pageWidth / 2, y, { align: 'center' });
+                    y += 11;
+                }
 
-                    <div class="pdf-section-title">* LINK PARA TUTORIAL PARA EMISSÃO DE DAE</div>
-                    <div>
-                        <a href="https://drive.google.com/open?id=1uPJp2AicqaN9HvGvKCAlfH5Co7fw1xX5" class="pdf-tutorial-link" target="_blank">TUTORIAL</a>
-                    </div>
-                    <div class="pdf-aviso">
-                        <strong>IMPORTANTE: Acesso apenas com e-mail institucional <span style="color: #1155cc; text-decoration: underline;">@seduc.ce.gov.br</span> ou @prof.ce.gov.br</strong>
-                    </div>
+                // 2. Título Principal
+                doc.setTextColor(0, 0, 0);
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(12.5);
+                doc.setDrawColor(0, 0, 0);
+                escreverSublinhado('INFORMAÇÕES PARA DEVOLUÇÃO VIA DAE', pageWidth / 2, y, { align: 'center' });
+                y += 14;
 
-                    <div class="pdf-assinatura">
-                        <div class="pdf-assinatura-titulo">Assinatura do responsável pela informação</div>
-                        <div class="pdf-assinatura-tecnico">${dados.TECNICO}</div>
-                        <div class="pdf-assinatura-linha"></div>
-                        <div class="pdf-rodape-institucional">
-                            Secretaria da Educação do Estado do Ceará – SEDUC<br>
-                            Coordenadoria de Gestão de Pessoas – COGEP<br>
-                            Célula de Folha de Pagamento – CEFOP
-                        </div>
-                    </div>
-                `;
-                wrapper.appendChild(page);
+                // 3. Seção Dados Pessoais
+                doc.setFontSize(11.5);
+                escreverSublinhado('* DADOS PESSOAIS', marginLeft, y);
+                y += 8;
+
+                const desenharCampo = (rotulo, valor) => {
+                    doc.setFont('helvetica', 'bold');
+                    doc.text(rotulo, marginLeft, y);
+                    const offsetRotulo = doc.getTextWidth(rotulo + ' ');
+                    doc.setFont('helvetica', 'normal');
+                    const linhasValor = doc.splitTextToSize(valor || '', maxTextWidth - offsetRotulo);
+                    doc.text(linhasValor, marginLeft + offsetRotulo, y);
+                    y += Math.max(linhasValor.length * 5.8, 6.5);
+                };
+
+                desenharCampo('CREDE:', dados.CREDE);
+                desenharCampo('CPF:', dados.CPF);
+                desenharCampo('MATRÍCULA:', dados.MATRICULA);
+                desenharCampo('NOME:', dados.NOME);
+                desenharCampo('CARGA HORÁRIA:', dados.CH);
+                y += 5;
+
+                // 4. Seção Justificativa
+                doc.setFont('helvetica', 'bold');
+                escreverSublinhado('* JUSTIFICATIVA', marginLeft, y);
+                y += 8;
+
+                doc.setFont('helvetica', 'normal');
+                const linhasJustificativa = doc.splitTextToSize(dados.JUSTIFICATIVA || '', maxTextWidth);
+                doc.text(linhasJustificativa, marginLeft, y);
+                y += Math.max(linhasJustificativa.length * 5.8, 12) + 4;
+
+                desenharCampo('VALOR:', dados.VALOR);
+                y += 6;
+
+                // 5. Seção Tutorial
+                doc.setFont('helvetica', 'bold');
+                escreverSublinhado('* LINK PARA TUTORIAL PARA EMISSÃO DE DAE', marginLeft, y);
+                y += 8;
+
+                // Link clicável TUTORIAL
+                doc.setTextColor(17, 85, 204);
+                doc.setDrawColor(17, 85, 204);
+                escreverSublinhado('TUTORIAL', marginLeft, y);
+                const larguraTutorial = doc.getTextWidth('TUTORIAL');
+                doc.link(marginLeft, y - 4, larguraTutorial, 6, {
+                    url: 'https://drive.google.com/open?id=1uPJp2AicqaN9HvGvKCAlfH5Co7fw1xX5'
+                });
+                y += 7;
+
+                // Aviso institucional
+                doc.setFontSize(10.5);
+                doc.setTextColor(0, 0, 0);
+                const parte1 = 'IMPORTANTE: Acesso apenas com e-mail institucional ';
+                doc.text(parte1, marginLeft, y);
+                const w1 = doc.getTextWidth(parte1);
+
+                doc.setTextColor(17, 85, 204);
+                doc.setDrawColor(17, 85, 204);
+                const email1 = '@seduc.ce.gov.br';
+                escreverSublinhado(email1, marginLeft + w1, y);
+                const w2 = doc.getTextWidth(email1);
+
+                doc.setTextColor(0, 0, 0);
+                doc.text(' ou @prof.ce.gov.br', marginLeft + w1 + w2, y);
+                y += 22;
+
+                // 6. Assinatura
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(11.5);
+                doc.text('Assinatura do responsável pela informação', marginLeft, y);
+                y += 12;
+
+                doc.text(dados.TECNICO || '', marginLeft, y);
+                y += 2;
+
+                doc.setDrawColor(0, 0, 0);
+                doc.setLineWidth(0.45);
+                doc.line(marginLeft, y, marginLeft + 125, y);
+                y += 8;
+
+                // 7. Rodapé Institucional
+                doc.setFont('helvetica', 'bolditalic');
+                doc.setFontSize(10.5);
+                doc.text('Secretaria da Educação do Estado do Ceará – SEDUC', marginLeft, y);
+                y += 5.5;
+                doc.text('Coordenadoria de Gestão de Pessoas – COGEP', marginLeft, y);
+                y += 5.5;
+                doc.text('Célula de Folha de Pagamento – CEFOP', marginLeft, y);
             });
 
             const nomeArquivo = listaRegistros.length === 1
                 ? `Devolucao_DAE_${(listaRegistros[0].NOME || 'SERVIDOR').replace(/\s+/g, '_')}.pdf`
                 : `Devolucao_DAE_Lote_${listaRegistros.length}_Servidores.pdf`;
 
-            // Torna o wrapper renderizável pelo html2canvas em segundo plano durante a captura
-            wrapper.style.display = 'block';
-
-            const opcoes = {
-                margin: 0,
-                filename: nomeArquivo,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true, scrollY: 0, scrollX: 0 },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                pagebreak: { mode: ['css', 'legacy'] },
-                enableLinks: true
-            };
-
-            try {
-                await html2pdf().set(opcoes).from(wrapper).save();
-            } catch (erro) {
-                console.error(erro);
-                alert('Erro ao gerar o PDF: ' + erro.message);
-            } finally {
-                wrapper.style.display = 'none';
-            }
+            doc.save(nomeArquivo);
         }
     </script>
 </body>
