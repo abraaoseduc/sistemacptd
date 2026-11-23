@@ -359,16 +359,19 @@
             background-color: #cbd5e1;
         }
 
-        /* Template oculto na tela que será renderizado no PDF */
+        /* Container do PDF posicionado em segundo plano apenas no momento da geração */
         #pdf-wrapper {
-            position: absolute;
-            left: -9999px;
+            display: none;
+            position: fixed;
             top: 0;
+            left: 0;
+            z-index: -9999;
+            background: #ffffff;
         }
 
         .pdf-page {
             width: 210mm;
-            height: 296mm;
+            height: 296.5mm;
             padding: 16mm 22mm;
             background: #ffffff;
             color: #000000;
@@ -376,13 +379,12 @@
             font-size: 11.5pt;
             line-height: 1.5;
             box-sizing: border-box;
-            page-break-after: always;
-            break-after: page;
+            overflow: hidden;
         }
 
-        .pdf-page:last-child {
-            page-break-after: auto;
-            break-after: auto;
+        .pdf-page-break {
+            page-break-before: always;
+            break-before: page;
         }
 
         .pdf-header {
@@ -681,7 +683,6 @@
             if (!val) return '';
             const limpo = val.trim();
             if (limpo.toUpperCase().startsWith('R$')) return limpo;
-            // Se vier número puro da planilha (ex: 1250,50 ou 1250.50), formata para R$
             const numStr = limpo.replace(/\./g, '').replace(',', '.');
             const num = parseFloat(numStr);
             if (!isNaN(num)) {
@@ -929,14 +930,12 @@ Célula de Folha de Pagamento – CEFOP`;
             }
 
             try {
-                // Adiciona timestamp para evitar cache antigo do GitHub Pages ao atualizar o .docx
                 const response = await fetch('DEVOLUCAO-DAE.docx?v=' + new Date().getTime());
                 if (!response.ok) {
                     throw new Error('Arquivo DEVOLUCAO-DAE.docx não encontrado na pasta DAE.');
                 }
                 const templateBuffer = await response.arrayBuffer();
 
-                // Gera um documento preenchido para cada registro
                 const xmlBodies = [];
                 let zipBase = null;
 
@@ -959,7 +958,6 @@ Célula de Folha de Pagamento – CEFOP`;
                     const bodyMatch = docXml.match(/<w:body>([\s\S]*?)<\/w:body>/);
                     if (bodyMatch) {
                         let innerBody = bodyMatch[1];
-                        // Remove o <w:sectPr> dos blocos intermediários para manter apenas no final
                         if (index < listaRegistros.length - 1) {
                             innerBody = innerBody.replace(/<w:sectPr[\s\S]*?<\/w:sectPr>/g, '');
                         }
@@ -967,7 +965,6 @@ Célula de Folha de Pagamento – CEFOP`;
                     }
                 });
 
-                // Se houver mais de 1 servidor, une os corpos XML com quebra de página entre eles
                 if (listaRegistros.length > 1 && zipBase && xmlBodies.length > 1) {
                     const quebraPaginaXml = '<w:p><w:r><w:br w:type="page"/></w:r></w:p>';
                     const corpoUnificado = xmlBodies.join(quebraPaginaXml);
@@ -992,8 +989,8 @@ Célula de Folha de Pagamento – CEFOP`;
             }
         }
 
-        /* GERAÇÃO DE PDF MULTIPÁGINAS */
-        function baixarPDF() {
+        /* GERAÇÃO DE PDF MULTIPÁGINAS CORRIGIDA */
+        async function baixarPDF() {
             const listaRegistros = extrairRegistrosDaCaixaCompilada();
             if (listaRegistros.length === 0) {
                 alert('Preencha ou cole pelo menos um registro antes de baixar.');
@@ -1003,9 +1000,9 @@ Célula de Folha de Pagamento – CEFOP`;
             const wrapper = document.getElementById('pdf-wrapper');
             wrapper.innerHTML = '';
 
-            listaRegistros.forEach((dados) => {
+            listaRegistros.forEach((dados, index) => {
                 const page = document.createElement('div');
-                page.className = 'pdf-page';
+                page.className = index > 0 ? 'pdf-page pdf-page-break' : 'pdf-page';
                 page.innerHTML = `
                     <div class="pdf-header">
                         <img src="brasao-seduc.png" alt="Governo do Estado do Ceará - Secretaria da Educação" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
@@ -1054,17 +1051,27 @@ Célula de Folha de Pagamento – CEFOP`;
                 ? `Devolucao_DAE_${(listaRegistros[0].NOME || 'SERVIDOR').replace(/\s+/g, '_')}.pdf`
                 : `Devolucao_DAE_Lote_${listaRegistros.length}_Servidores.pdf`;
 
+            // Torna o wrapper renderizável pelo html2canvas em segundo plano durante a captura
+            wrapper.style.display = 'block';
+
             const opcoes = {
                 margin: 0,
                 filename: nomeArquivo,
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true },
+                html2canvas: { scale: 2, useCORS: true, scrollY: 0, scrollX: 0 },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
                 pagebreak: { mode: ['css', 'legacy'] },
                 enableLinks: true
             };
 
-            html2pdf().set(opcoes).from(wrapper).save();
+            try {
+                await html2pdf().set(opcoes).from(wrapper).save();
+            } catch (erro) {
+                console.error(erro);
+                alert('Erro ao gerar o PDF: ' + erro.message);
+            } finally {
+                wrapper.style.display = 'none';
+            }
         }
     </script>
 </body>
