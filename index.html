@@ -10,6 +10,8 @@
             --primary-hover: #15803d;
             --secondary: #0f766e;
             --secondary-hover: #0d9488;
+            --tertiary: #0369a1;
+            --tertiary-hover: #0284c7;
             --bg: #f0fdf4;
             --card-bg: #ffffff;
             --text-main: #14532d;
@@ -76,7 +78,7 @@
             max-width: 600px;
         }
 
-        /* Container do botão inferior (Centralizado abaixo) */
+        /* Container dos botões inferiores (Centralizados abaixo) */
         .menu-buttons-secondary {
             display: flex;
             justify-content: center;
@@ -111,7 +113,7 @@
             box-shadow: 0 8px 15px rgba(22, 163, 74, 0.25);
         }
 
-        /* Estilo para o novo botão (Calculadora Virtual / Rubricas) */
+        /* Estilo para o botão (Calculadora Virtual / Rubricas) */
         .btn-menu-alt {
             border-color: var(--secondary);
             color: var(--secondary);
@@ -121,6 +123,18 @@
             background-color: var(--secondary-hover);
             color: #ffffff;
             box-shadow: 0 8px 15px rgba(15, 118, 110, 0.25);
+        }
+
+        /* Estilo para o novo botão (Devolução - DAE) */
+        .btn-menu-dae {
+            border-color: var(--tertiary);
+            color: var(--tertiary);
+        }
+
+        .btn-menu-dae:hover {
+            background-color: var(--tertiary-hover);
+            color: #ffffff;
+            box-shadow: 0 8px 15px rgba(3, 105, 161, 0.25);
         }
     </style>
 </head>
@@ -143,6 +157,11 @@
         <!-- Linha 2: Calculadora Virtual / Rubricas centralizado -->
         <div class="menu-buttons-secondary">
             <a href="calculadora.html" class="btn-menu btn-menu-alt">Calculadora Virtual / Rubricas</a>
+        </div>
+
+        <!-- Linha 3: Devolução - DAE centralizado abaixo -->
+        <div class="menu-buttons-secondary">
+            <a href="DAE/index.html" class="btn-menu btn-menu-dae">Devolução - DAE</a>
         </div>
     </div>
 
