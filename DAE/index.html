@@ -160,7 +160,7 @@
         /* Caixa de texto compilada */
         textarea.compiled-box {
             width: 100%;
-            min-height: 390px;
+            min-height: 420px;
             font-family: 'Consolas', 'Courier New', monospace;
             font-size: 0.9rem;
             line-height: 1.5;
@@ -305,11 +305,11 @@
         .pdf-aviso {
             font-size: 10.5pt;
             margin-top: 4px;
-            margin-bottom: 45px;
+            margin-bottom: 40px;
         }
 
         .pdf-assinatura {
-            margin-top: 55px;
+            margin-top: 45px;
             text-align: left;
             width: 75%;
         }
@@ -327,6 +327,15 @@
         .pdf-assinatura-linha {
             border-top: 1.5px solid #000000;
             width: 100%;
+            margin-bottom: 18px;
+        }
+
+        .pdf-rodape-institucional {
+            font-weight: bold;
+            font-style: italic;
+            font-size: 11pt;
+            line-height: 1.45;
+            color: #000000;
         }
     </style>
 </head>
@@ -444,6 +453,11 @@
                 <div class="pdf-assinatura-titulo">Assinatura do responsável pela informação</div>
                 <div class="pdf-assinatura-tecnico" id="pdf-tecnico"></div>
                 <div class="pdf-assinatura-linha"></div>
+                <div class="pdf-rodape-institucional">
+                    Secretaria da Educação do Estado do Ceará – SEDUC<br>
+                    Coordenadoria de Gestão de Pessoas – COGEP<br>
+                    Célula de Folha de Pagamento – CEFOP
+                </div>
             </div>
         </div>
     </div>
@@ -502,7 +516,11 @@ TUTORIAL (https://drive.google.com/open?id=1uPJp2AicqaN9HvGvKCAlfH5Co7fw1xX5)
 IMPORTANTE: Acesso apenas com e-mail institucional @seduc.ce.gov.br ou @prof.ce.gov.br
 
 Assinatura do responsável pela informação
-${tecnico}`;
+${tecnico}
+____________________________________________________________
+Secretaria da Educação do Estado do Ceará – SEDUC
+Coordenadoria de Gestão de Pessoas – COGEP
+Célula de Folha de Pagamento – CEFOP`;
 
             document.getElementById('textoCompilado').value = texto;
         }
@@ -534,7 +552,7 @@ ${tecnico}`;
             };
 
             const extrairTecnico = () => {
-                const match = textoAtual.match(/Assinatura do responsável pela informação\n(.*)$/m);
+                const match = textoAtual.match(/Assinatura do responsável pela informação\n([^\n_]*)/);
                 return match ? match[1].trim() : document.getElementById('tecnico').value.trim().toUpperCase();
             };
 
