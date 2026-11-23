@@ -34,7 +34,7 @@
             background-color: var(--bg);
             color: var(--text-dark);
             padding: 2rem 1rem;
-            max-width: 1200px;
+            max-width: 1280px;
             margin: 0 auto;
         }
 
@@ -127,7 +127,7 @@
             align-items: start;
         }
 
-        @media (max-width: 900px) {
+        @media (max-width: 950px) {
             .grid-container {
                 grid-template-columns: 1fr;
             }
@@ -197,9 +197,9 @@
 
         textarea.compiled-box {
             width: 100%;
-            min-height: 420px;
+            min-height: 440px;
             font-family: 'Consolas', 'Courier New', monospace;
-            font-size: 0.9rem;
+            font-size: 0.88rem;
             line-height: 1.5;
             background-color: #f8fafc;
             color: #0f172a;
@@ -211,13 +211,13 @@
 
         textarea.sheet-paste-box {
             width: 100%;
-            min-height: 200px;
+            min-height: 180px;
             font-family: 'Consolas', 'Courier New', monospace;
-            font-size: 0.88rem;
+            font-size: 0.85rem;
             line-height: 1.5;
             background-color: #f8fafc;
             border: 2px dashed #94a3b8;
-            padding: 1rem;
+            padding: 0.85rem;
             border-radius: 8px;
             resize: vertical;
             white-space: pre;
@@ -230,14 +230,14 @@
             border-radius: 8px;
             padding: 0.85rem 1rem;
             margin-bottom: 1rem;
-            font-size: 0.88rem;
+            font-size: 0.85rem;
             color: #1e3a8a;
         }
 
         .columns-badges {
             display: flex;
             flex-wrap: wrap;
-            gap: 0.4rem;
+            gap: 0.35rem;
             margin-top: 0.5rem;
         }
 
@@ -245,16 +245,16 @@
             background-color: #dbeafe;
             color: #1e40af;
             font-weight: 700;
-            padding: 0.25rem 0.6rem;
+            padding: 0.2rem 0.5rem;
             border-radius: 4px;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             border: 1px solid #93c5fd;
         }
 
         .preview-table-wrapper {
-            margin-top: 1.25rem;
+            margin-top: 1rem;
             overflow-x: auto;
-            max-height: 300px;
+            max-height: 220px;
             border: 1px solid #e2e8f0;
             border-radius: 8px;
         }
@@ -262,7 +262,7 @@
         table.preview-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
         }
 
         table.preview-table th {
@@ -270,23 +270,23 @@
             color: #334155;
             font-weight: 700;
             text-align: left;
-            padding: 0.6rem;
+            padding: 0.5rem;
             border-bottom: 2px solid #cbd5e1;
             position: sticky;
             top: 0;
         }
 
         table.preview-table td {
-            padding: 0.55rem 0.6rem;
+            padding: 0.45rem 0.5rem;
             border-bottom: 1px solid #e2e8f0;
             color: #1f2937;
         }
 
         .status-count {
-            margin-top: 0.85rem;
+            margin-top: 0.75rem;
             font-weight: 700;
             color: var(--primary);
-            font-size: 0.95rem;
+            font-size: 0.9rem;
         }
 
         .actions {
@@ -297,7 +297,7 @@
         }
 
         .btn {
-            padding: 0.85rem 1.2rem;
+            padding: 0.85rem 1rem;
             border: none;
             border-radius: 8px;
             font-size: 0.95rem;
@@ -305,7 +305,7 @@
             cursor: pointer;
             transition: all 0.2s;
             flex: 1;
-            min-width: 160px;
+            min-width: 140px;
             text-align: center;
         }
 
@@ -331,7 +331,7 @@
             background-color: #e2e8f0;
             color: #334155;
             flex: 0.35;
-            min-width: 90px;
+            min-width: 85px;
         }
 
         .btn-clear:hover {
@@ -485,148 +485,151 @@
         </button>
     </div>
 
-    <!-- MODO 1: PREENCHIMENTO MANUAL -->
-    <div id="areaManual" class="grid-container section-hidden">
-        <!-- Coluna 1: Formulário de Entrada -->
-        <div class="card">
-            <h2>1. Preenchimento das Informações</h2>
-            
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="crede">CREDE:</label>
-                    <input type="text" id="crede" placeholder="Ex: CREDE 01" oninput="atualizarCompilado()">
+    <!-- ÁREA PRINCIPAL EM 2 COLUNAS (Exibida após escolher o modo) -->
+    <div id="workspaceGrid" class="grid-container section-hidden">
+        
+        <!-- COLUNA 1: ALTERNA ENTRE MANUAL E PLANILHA -->
+        <div>
+            <!-- Card do Modo Manual -->
+            <div id="cardManual" class="card section-hidden">
+                <h2>1. Preenchimento das Informações (Manual)</h2>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="crede">CREDE:</label>
+                        <input type="text" id="crede" placeholder="Ex: CREDE 01" oninput="atualizarCompiladoManual()">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cpf">CPF:</label>
+                        <input type="text" id="cpf" placeholder="000.000.000-00" maxlength="14" oninput="mascaraCPF(this); atualizarCompiladoManual()">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="matricula">MATRÍCULA:</label>
+                        <input type="text" id="matricula" placeholder="Ex: 123456-1-X" oninput="atualizarCompiladoManual()">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ch">CARGA HORÁRIA:</label>
+                        <input type="text" id="ch" placeholder="Ex: 200h" oninput="atualizarCompiladoManual()">
+                    </div>
                 </div>
 
                 <div class="form-group">
-                    <label for="cpf">CPF:</label>
-                    <input type="text" id="cpf" placeholder="000.000.000-00" maxlength="14" oninput="mascaraCPF(this); atualizarCompilado()">
-                </div>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="matricula">MATRÍCULA:</label>
-                    <input type="text" id="matricula" placeholder="Ex: 123456-1-X" oninput="atualizarCompilado()">
+                    <label for="nome">NOME COMPLETO:</label>
+                    <input type="text" id="nome" placeholder="Digite o nome completo do servidor" oninput="atualizarCompiladoManual()">
                 </div>
 
                 <div class="form-group">
-                    <label for="ch">CARGA HORÁRIA:</label>
-                    <input type="text" id="ch" placeholder="Ex: 200h" oninput="atualizarCompilado()">
+                    <label for="justificativa">JUSTIFICATIVA:</label>
+                    <textarea id="justificativa" class="justificativa-input" placeholder="Descreva detalhadamente o motivo da devolução via DAE..." oninput="atualizarCompiladoManual()"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="valor">VALOR (R$):</label>
+                    <input type="text" id="valor" placeholder="R$ 0,00" oninput="mascaraMoeda(this); atualizarCompiladoManual()">
+                </div>
+
+                <div class="form-group">
+                    <label for="tecnico">TÉCNICO RESPONSÁVEL:</label>
+                    <input type="text" id="tecnico" placeholder="Nome do técnico responsável pela informação" oninput="atualizarCompiladoManual()">
                 </div>
             </div>
 
-            <div class="form-group">
-                <label for="nome">NOME COMPLETO:</label>
-                <input type="text" id="nome" placeholder="Digite o nome completo do servidor" oninput="atualizarCompilado()">
-            </div>
+            <!-- Card do Modo Planilha -->
+            <div id="cardPlanilha" class="card section-hidden">
+                <h2>1. Importação via Planilha</h2>
+                
+                <div class="columns-guide">
+                    <strong>Instruções:</strong> Copie as linhas da planilha e cole abaixo na ordem:
+                    <div class="columns-badges">
+                        <span class="badge-col">CREDE</span>
+                        <span class="badge-col">CPF</span>
+                        <span class="badge-col">MATRÍCULA</span>
+                        <span class="badge-col">CARGA HORÁRIA</span>
+                        <span class="badge-col">JUSTIFICATIVA</span>
+                        <span class="badge-col">VALOR</span>
+                        <span class="badge-col">TÉCNICO RESPONSÁVEL</span>
+                    </div>
+                    <div style="margin-top: 0.4rem; font-size: 0.78rem; color: #334155;">
+                        <em>* Se houver a coluna <strong>NOME COMPLETO</strong> após a matrícula (8 colunas), será reconhecida automaticamente.</em>
+                    </div>
+                </div>
 
-            <div class="form-group">
-                <label for="justificativa">JUSTIFICATIVA:</label>
-                <textarea id="justificativa" class="justificativa-input" placeholder="Descreva detalhadamente o motivo da devolução via DAE..." oninput="atualizarCompilado()"></textarea>
-            </div>
+                <textarea id="dadosPlanilha" class="sheet-paste-box" placeholder="Cole aqui as células copiadas da planilha (Ctrl+V)..." oninput="processarPlanilha()"></textarea>
 
-            <div class="form-group">
-                <label for="valor">VALOR (R$):</label>
-                <input type="text" id="valor" placeholder="R$ 0,00" oninput="mascaraMoeda(this); atualizarCompilado()">
-            </div>
+                <div id="statusPlanilha" class="status-count">Nenhum registro colado ainda.</div>
 
-            <div class="form-group">
-                <label for="tecnico">TÉCNICO RESPONSÁVEL:</label>
-                <input type="text" id="tecnico" placeholder="Nome do técnico responsável pela informação" oninput="atualizarCompilado()">
+                <div id="previewWrapper" class="preview-table-wrapper section-hidden">
+                    <table class="preview-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>CREDE</th>
+                                <th>CPF</th>
+                                <th>MATRÍCULA</th>
+                                <th>NOME</th>
+                                <th>CH</th>
+                                <th>VALOR</th>
+                                <th>TÉCNICO</th>
+                            </tr>
+                        </thead>
+                        <tbody id="previewBody"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
-        <!-- Coluna 2: Caixa de Texto Compilada e Download -->
+        <!-- COLUNA 2: SEMPRE VISÍVEL NOS DOIS MODOS -->
         <div class="card">
             <h2>2. Texto Compilado & Geração de Arquivo</h2>
             <p style="font-size: 0.85rem; color: #475569; margin-bottom: 0.75rem;">
-                O texto abaixo é atualizado automaticamente. Você pode editar na caixa antes de gerar o Word (.docx) ou PDF.
+                O texto abaixo é atualizado automaticamente conforme o preenchimento. Você também pode editar diretamente na caixa antes de baixar.
             </p>
 
             <textarea id="textoCompilado" class="compiled-box"></textarea>
 
             <div class="actions">
-                <button type="button" class="btn btn-clear" onclick="limparCampos()">Limpar</button>
-                <button type="button" class="btn btn-docx" onclick="baixarManualDOCX()">Baixar Word (.docx)</button>
-                <button type="button" class="btn btn-pdf" onclick="baixarManualPDF()">Baixar PDF</button>
+                <button type="button" class="btn btn-clear" onclick="limparTudo()">Limpar</button>
+                <button type="button" class="btn btn-docx" onclick="baixarDOCX()">Baixar Word (.docx)</button>
+                <button type="button" class="btn btn-pdf" onclick="baixarPDF()">Baixar PDF</button>
             </div>
         </div>
-    </div>
 
-    <!-- MODO 2: PREENCHIMENTO VIA PLANILHA -->
-    <div id="areaPlanilha" class="section-hidden">
-        <div class="card">
-            <h2>Importação em Lote via Planilha (Excel / Google Sheets)</h2>
-            
-            <div class="columns-guide">
-                <strong>Instruções:</strong> Selecione e copie as linhas da sua planilha (com ou sem cabeçalho) e cole na caixa abaixo. Ordem esperada das colunas:
-                <div class="columns-badges">
-                    <span class="badge-col">CREDE</span>
-                    <span class="badge-col">CPF</span>
-                    <span class="badge-col">MATRÍCULA</span>
-                    <span class="badge-col">CARGA HORÁRIA</span>
-                    <span class="badge-col">JUSTIFICATIVA</span>
-                    <span class="badge-col">VALOR</span>
-                    <span class="badge-col">TÉCNICO RESPONSÁVEL</span>
-                </div>
-                <div style="margin-top: 0.45rem; font-size: 0.82rem; color: #334155;">
-                    <em>* Caso sua planilha também tenha a coluna <strong>NOME COMPLETO</strong> após a matrícula (8 colunas), o sistema reconhece automaticamente.</em>
-                </div>
-            </div>
-
-            <textarea id="dadosPlanilha" class="sheet-paste-box" placeholder="Cole aqui as células copiadas da planilha (Ctrl+V)..." oninput="processarPlanilha()"></textarea>
-
-            <div id="statusPlanilha" class="status-count">Nenhum registro colado ainda.</div>
-
-            <div id="previewWrapper" class="preview-table-wrapper section-hidden">
-                <table class="preview-table">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>CREDE</th>
-                            <th>CPF</th>
-                            <th>MATRÍCULA</th>
-                            <th>NOME</th>
-                            <th>CH</th>
-                            <th>VALOR</th>
-                            <th>TÉCNICO</th>
-                        </tr>
-                    </thead>
-                    <tbody id="previewBody"></tbody>
-                </table>
-            </div>
-
-            <div class="actions">
-                <button type="button" class="btn btn-clear" onclick="limparPlanilha()">Limpar</button>
-                <button type="button" class="btn btn-docx" onclick="baixarLoteDOCX()">Baixar Word Único (.docx)</button>
-                <button type="button" class="btn btn-pdf" onclick="baixarLotePDF()">Baixar PDF Único</button>
-            </div>
-        </div>
     </div>
 
     <!-- Container oculto onde as páginas A4 são renderizadas para o PDF -->
     <div id="pdf-wrapper"></div>
 
     <script>
+        let modoAtual = '';
         let registrosLote = [];
 
         function selecionarModo(modo) {
+            modoAtual = modo;
             const btnManual = document.getElementById('btnModeManual');
             const btnPlanilha = document.getElementById('btnModePlanilha');
-            const areaManual = document.getElementById('areaManual');
-            const areaPlanilha = document.getElementById('areaPlanilha');
+            const workspaceGrid = document.getElementById('workspaceGrid');
+            const cardManual = document.getElementById('cardManual');
+            const cardPlanilha = document.getElementById('cardPlanilha');
+
+            workspaceGrid.classList.remove('section-hidden');
 
             if (modo === 'manual') {
                 btnManual.classList.add('active');
                 btnPlanilha.classList.remove('active');
-                areaManual.classList.remove('section-hidden');
-                areaPlanilha.classList.add('section-hidden');
-                atualizarCompilado();
+                cardManual.classList.remove('section-hidden');
+                cardPlanilha.classList.add('section-hidden');
+                atualizarCompiladoManual();
             } else {
                 btnPlanilha.classList.add('active');
                 btnManual.classList.remove('active');
-                areaPlanilha.classList.remove('section-hidden');
-                areaManual.classList.add('section-hidden');
+                cardPlanilha.classList.remove('section-hidden');
+                cardManual.classList.add('section-hidden');
+                processarPlanilha();
             }
         }
 
@@ -650,92 +653,89 @@
             campo.value = "R$ " + v;
         }
 
-        function atualizarCompilado() {
-            const crede = document.getElementById('crede').value.trim();
-            const cpf = document.getElementById('cpf').value.trim();
-            const matricula = document.getElementById('matricula').value.trim();
-            const nome = document.getElementById('nome').value.trim().toUpperCase();
-            const ch = document.getElementById('ch').value.trim();
-            const justificativa = document.getElementById('justificativa').value.trim();
-            const valor = document.getElementById('valor').value.trim();
-            const tecnico = document.getElementById('tecnico').value.trim().toUpperCase();
-
-            const texto = 
-`GOVERNO DO ESTADO DO CEARÁ
+        function formatarBlocoTexto(dados) {
+            return `GOVERNO DO ESTADO DO CEARÁ
 SECRETARIA DA EDUCAÇÃO
 
 INFORMAÇÕES PARA DEVOLUÇÃO VIA DAE
 
 * DADOS PESSOAIS
-CREDE: ${crede}
-CPF: ${cpf}
-MATRÍCULA: ${matricula}
-NOME: ${nome}
-CARGA HORÁRIA: ${ch}
+CREDE: ${dados.CREDE}
+CPF: ${dados.CPF}
+MATRÍCULA: ${dados.MATRICULA}
+NOME: ${dados.NOME}
+CARGA HORÁRIA: ${dados.CH}
 
 * JUSTIFICATIVA
-${justificativa}
+${dados.JUSTIFICATIVA}
 
-VALOR: ${valor}
+VALOR: ${dados.VALOR}
 
 * LINK PARA TUTORIAL PARA EMISSÃO DE DAE
 TUTORIAL (https://drive.google.com/open?id=1uPJp2AicqaN9HvGvKCAlfH5Co7fw1xX5)
 IMPORTANTE: Acesso apenas com e-mail institucional @seduc.ce.gov.br ou @prof.ce.gov.br
 
 Assinatura do responsável pela informação
-${tecnico}
+${dados.TECNICO}
 ____________________________________________________________
 Secretaria da Educação do Estado do Ceará – SEDUC
 Coordenadoria de Gestão de Pessoas – COGEP
 Célula de Folha de Pagamento – CEFOP`;
-
-            document.getElementById('textoCompilado').value = texto;
         }
 
-        function limparCampos() {
-            document.getElementById('crede').value = '';
-            document.getElementById('cpf').value = '';
-            document.getElementById('matricula').value = '';
-            document.getElementById('nome').value = '';
-            document.getElementById('ch').value = '';
-            document.getElementById('justificativa').value = '';
-            document.getElementById('valor').value = '';
-            document.getElementById('tecnico').value = '';
-            atualizarCompilado();
+        function atualizarCompiladoManual() {
+            const dados = {
+                CREDE: document.getElementById('crede').value.trim(),
+                CPF: document.getElementById('cpf').value.trim(),
+                MATRICULA: document.getElementById('matricula').value.trim(),
+                NOME: document.getElementById('nome').value.trim().toUpperCase(),
+                CH: document.getElementById('ch').value.trim(),
+                JUSTIFICATIVA: document.getElementById('justificativa').value.trim(),
+                VALOR: document.getElementById('valor').value.trim(),
+                TECNICO: document.getElementById('tecnico').value.trim().toUpperCase()
+            };
+
+            document.getElementById('textoCompilado').value = formatarBlocoTexto(dados);
         }
 
-        function obterDadosManual() {
-            const textoAtual = document.getElementById('textoCompilado').value;
+        function extrairRegistrosDaCaixaCompilada() {
+            const textoCompleto = document.getElementById('textoCompilado').value;
+            if (!textoCompleto.trim()) return [];
 
-            const extrairLinha = (chave) => {
-                const regex = new RegExp(`^${chave}:\\s*(.*)$`, 'm');
-                const match = textoAtual.match(regex);
-                return match ? match[1].trim() : '';
-            };
+            // Separa pelos blocos caso haja múltiplos documentos na caixa de texto
+            const blocos = textoCompleto.split(/\n*={5,}\s*PÁGINA\s*\d+\s*={5,}\n*/i).filter(b => b.trim() !== '');
 
-            const extrairJustificativa = () => {
-                const match = textoAtual.match(/\* JUSTIFICATIVA\n([\s\S]*?)\n\nVALOR:/);
-                return match ? match[1].trim() : document.getElementById('justificativa').value.trim();
-            };
+            return blocos.map(bloco => {
+                const extrairLinha = (chave) => {
+                    const regex = new RegExp(`^${chave}:\\s*(.*)$`, 'm');
+                    const match = bloco.match(regex);
+                    return match ? match[1].trim() : '';
+                };
 
-            const extrairTecnico = () => {
-                const match = textoAtual.match(/Assinatura do responsável pela informação\n([^\n_]*)/);
-                return match ? match[1].trim() : document.getElementById('tecnico').value.trim().toUpperCase();
-            };
+                const extrairJustificativa = () => {
+                    const match = bloco.match(/\* JUSTIFICATIVA\n([\s\S]*?)\n\nVALOR:/);
+                    return match ? match[1].trim() : '';
+                };
 
-            return [{
-                CREDE: extrairLinha('CREDE'),
-                CPF: extrairLinha('CPF'),
-                MATRICULA: extrairLinha('MATRÍCULA'),
-                NOME: extrairLinha('NOME'),
-                CH: extrairLinha('CARGA HORÁRIA'),
-                JUSTIFICATIVA: extrairJustificativa(),
-                VALOR: extrairLinha('VALOR'),
-                TECNICO: extrairTecnico()
-            }];
+                const extrairTecnico = () => {
+                    const match = bloco.match(/Assinatura do responsável pela informação\n([^\n_]*)/);
+                    return match ? match[1].trim() : '';
+                };
+
+                return {
+                    CREDE: extrairLinha('CREDE'),
+                    CPF: extrairLinha('CPF'),
+                    MATRICULA: extrairLinha('MATRÍCULA'),
+                    NOME: extrairLinha('NOME'),
+                    CH: extrairLinha('CARGA HORÁRIA'),
+                    JUSTIFICATIVA: extrairJustificativa(),
+                    VALOR: extrairLinha('VALOR'),
+                    TECNICO: extrairTecnico()
+                };
+            });
         }
 
-        /* Processamento de colagem de planilha (suporta células com quebras de linha entre aspas) */
+        /* Processamento de colagem de planilha */
         function parseTSV(texto) {
             const linhas = [];
             let linhaAtual = [];
@@ -784,6 +784,7 @@ Célula de Folha de Pagamento – CEFOP`;
             const statusEl = document.getElementById('statusPlanilha');
             const previewWrapper = document.getElementById('previewWrapper');
             const previewBody = document.getElementById('previewBody');
+            const caixaCompilada = document.getElementById('textoCompilado');
 
             registrosLote = [];
             previewBody.innerHTML = '';
@@ -791,20 +792,19 @@ Célula de Folha de Pagamento – CEFOP`;
             if (!texto.trim()) {
                 statusEl.textContent = 'Nenhum registro colado ainda.';
                 previewWrapper.classList.add('section-hidden');
+                caixaCompilada.value = '';
                 return;
             }
 
             const linhas = parseTSV(texto);
 
             linhas.forEach((cols, idx) => {
-                // Ignora linha de cabeçalho caso tenha sido copiada junto
                 const primeiraCol = (cols[0] || '').toUpperCase();
                 const segundaCol = (cols[1] || '').toUpperCase();
                 if (idx === 0 && (primeiraCol === 'CREDE' || segundaCol === 'CPF')) {
                     return;
                 }
 
-                // Se tiver 8 colunas ou mais, assume que a 4ª coluna é NOME COMPLETO
                 if (cols.length >= 8) {
                     registrosLote.push({
                         CREDE: cols[0] || '',
@@ -817,7 +817,6 @@ Célula de Folha de Pagamento – CEFOP`;
                         TECNICO: (cols[7] || '').toUpperCase()
                     });
                 } else {
-                    // Padrão de 7 colunas: CREDE, CPF, MATRÍCULA, CARGA HORÁRIA, JUSTIFICATIVA, VALOR, TÉCNICO
                     registrosLote.push({
                         CREDE: cols[0] || '',
                         CPF: cols[1] || '',
@@ -834,11 +833,14 @@ Célula de Folha de Pagamento – CEFOP`;
             if (registrosLote.length === 0) {
                 statusEl.textContent = 'Nenhum registro válido identificado.';
                 previewWrapper.classList.add('section-hidden');
+                caixaCompilada.value = '';
                 return;
             }
 
             statusEl.textContent = `✔ ${registrosLote.length} registro(s) pronto(s) para gerar (${registrosLote.length} página(s)).`;
             previewWrapper.classList.remove('section-hidden');
+
+            const textosCompilados = [];
 
             registrosLote.forEach((reg, i) => {
                 const tr = document.createElement('tr');
@@ -853,15 +855,35 @@ Célula de Folha de Pagamento – CEFOP`;
                     <td>${reg.TECNICO}</td>
                 `;
                 previewBody.appendChild(tr);
+
+                if (registrosLote.length > 1) {
+                    textosCompilados.push(`==================== PÁGINA ${i + 1} ====================\n\n${formatarBlocoTexto(reg)}`);
+                } else {
+                    textosCompilados.push(formatarBlocoTexto(reg));
+                }
             });
+
+            caixaCompilada.value = textosCompilados.join('\n\n');
         }
 
-        function limparPlanilha() {
-            document.getElementById('dadosPlanilha').value = '';
-            processarPlanilha();
+        function limparTudo() {
+            if (modoAtual === 'manual') {
+                document.getElementById('crede').value = '';
+                document.getElementById('cpf').value = '';
+                document.getElementById('matricula').value = '';
+                document.getElementById('nome').value = '';
+                document.getElementById('ch').value = '';
+                document.getElementById('justificativa').value = '';
+                document.getElementById('valor').value = '';
+                document.getElementById('tecnico').value = '';
+                atualizarCompiladoManual();
+            } else {
+                document.getElementById('dadosPlanilha').value = '';
+                processarPlanilha();
+            }
         }
 
-        /* GERAÇÃO DE WORD (.DOCX) MULTIPÁGINAS 100% PELO CÓDIGO */
+        /* GERAÇÃO DE WORD (.DOCX) MULTIPÁGINAS */
         async function gerarDocumentoWord(listaRegistros, nomeArquivo) {
             if (!listaRegistros || listaRegistros.length === 0) {
                 alert('Preencha ou cole pelo menos um registro antes de baixar.');
@@ -873,12 +895,10 @@ Célula de Folha de Pagamento – CEFOP`;
             const children = [];
 
             listaRegistros.forEach((dados, index) => {
-                // Quebra de página antes de cada novo servidor (a partir do 2º)
                 if (index > 0) {
                     children.push(new Paragraph({ children: [new PageBreak()] }));
                 }
 
-                // Cabeçalho Institucional
                 children.push(
                     new Paragraph({
                         alignment: AlignmentType.CENTER,
@@ -901,7 +921,6 @@ Célula de Folha de Pagamento – CEFOP`;
                             new TextRun({ text: "SECRETARIA DA EDUCAÇÃO", bold: true, size: 20, font: "Arial", color: "475569" })
                         ]
                     }),
-                    // Título do Documento
                     new Paragraph({
                         alignment: AlignmentType.CENTER,
                         spacing: { after: 280 },
@@ -915,7 +934,6 @@ Célula de Folha de Pagamento – CEFOP`;
                             })
                         ]
                     }),
-                    // Seção Dados Pessoais
                     new Paragraph({
                         spacing: { before: 120, after: 140 },
                         children: [
@@ -963,7 +981,6 @@ Célula de Folha de Pagamento – CEFOP`;
                             new TextRun({ text: dados.CH, size: 23, font: "Arial" })
                         ]
                     }),
-                    // Seção Justificativa
                     new Paragraph({
                         spacing: { before: 120, after: 140 },
                         children: [
@@ -990,7 +1007,6 @@ Célula de Folha de Pagamento – CEFOP`;
                             new TextRun({ text: dados.VALOR, size: 23, font: "Arial" })
                         ]
                     }),
-                    // Seção Tutorial
                     new Paragraph({
                         spacing: { before: 120, after: 120 },
                         children: [
@@ -1046,7 +1062,6 @@ Célula de Folha de Pagamento – CEFOP`;
                             })
                         ]
                     }),
-                    // Assinatura
                     new Paragraph({
                         spacing: { after: 240 },
                         children: [
@@ -1065,7 +1080,6 @@ Célula de Folha de Pagamento – CEFOP`;
                             new TextRun({ text: "_______________________________________________________", bold: true, size: 23, font: "Arial" })
                         ]
                     }),
-                    // Rodapé Institucional
                     new Paragraph({
                         spacing: { after: 40 },
                         children: [
@@ -1172,24 +1186,28 @@ Célula de Folha de Pagamento – CEFOP`;
             html2pdf().set(opcoes).from(wrapper).save();
         }
 
-        function baixarManualDOCX() {
-            const lista = obterDadosManual();
-            const nome = (lista[0].NOME || 'SERVIDOR').replace(/\s+/g, '_');
-            gerarDocumentoWord(lista, `Devolucao_DAE_${nome}.docx`);
+        function baixarDOCX() {
+            const lista = extrairRegistrosDaCaixaCompilada();
+            if (lista.length === 0) {
+                alert('Nenhum registro encontrado na caixa de texto compilada.');
+                return;
+            }
+            const nomeArquivo = lista.length === 1 
+                ? `Devolucao_DAE_${(lista[0].NOME || 'SERVIDOR').replace(/\s+/g, '_')}.docx`
+                : `Devolucao_DAE_Lote_${lista.length}_Servidores.docx`;
+            gerarDocumentoWord(lista, nomeArquivo);
         }
 
-        function baixarManualPDF() {
-            const lista = obterDadosManual();
-            const nome = (lista[0].NOME || 'SERVIDOR').replace(/\s+/g, '_');
-            gerarDocumentoPDF(lista, `Devolucao_DAE_${nome}.pdf`);
-        }
-
-        function baixarLoteDOCX() {
-            gerarDocumentoWord(registrosLote, `Devolucao_DAE_Lote_${registrosLote.length}_Servidores.docx`);
-        }
-
-        function baixarLotePDF() {
-            gerarDocumentoPDF(registrosLote, `Devolucao_DAE_Lote_${registrosLote.length}_Servidores.pdf`);
+        function baixarPDF() {
+            const lista = extrairRegistrosDaCaixaCompilada();
+            if (lista.length === 0) {
+                alert('Nenhum registro encontrado na caixa de texto compilada.');
+                return;
+            }
+            const nomeArquivo = lista.length === 1 
+                ? `Devolucao_DAE_${(lista[0].NOME || 'SERVIDOR').replace(/\s+/g, '_')}.pdf`
+                : `Devolucao_DAE_Lote_${lista.length}_Servidores.pdf`;
+            gerarDocumentoPDF(lista, nomeArquivo);
         }
     </script>
 </body>
