@@ -6,9 +6,8 @@
     <title>Devolução - DAE | Sistema CPTD</title>
     <!-- Biblioteca html2pdf para download direto em PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <!-- Bibliotecas para ler e preencher o DEVOLUCAO-DAE.docx -->
-    <script src="https://unpkg.com/pizzip@3.1.4/dist/pizzip.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/docxtemplater/3.42.0/docxtemplater.js"></script>
+    <!-- Biblioteca docx.js para gerar arquivos Word (.docx) multipáginas 100% via código -->
+    <script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <style>
         :root {
@@ -80,6 +79,45 @@
         header p {
             color: #4b5563;
             margin-top: 0.3rem;
+        }
+
+        /* Seletor de Modo (Manual vs Planilha) */
+        .mode-selector {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-mode {
+            background-color: var(--card-bg);
+            border: 2px solid var(--tertiary);
+            color: var(--tertiary);
+            padding: 1.25rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 700;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-width: 260px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .btn-mode:hover {
+            background-color: #e0f2fe;
+            transform: translateY(-2px);
+        }
+
+        .btn-mode.active {
+            background-color: var(--tertiary);
+            color: #ffffff;
+            box-shadow: 0 6px 14px rgba(3, 105, 161, 0.25);
+        }
+
+        .section-hidden {
+            display: none !important;
         }
 
         .grid-container {
@@ -157,7 +195,6 @@
             min-height: 90px;
         }
 
-        /* Caixa de texto compilada */
         textarea.compiled-box {
             width: 100%;
             min-height: 420px;
@@ -172,6 +209,86 @@
             resize: vertical;
         }
 
+        textarea.sheet-paste-box {
+            width: 100%;
+            min-height: 200px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.88rem;
+            line-height: 1.5;
+            background-color: #f8fafc;
+            border: 2px dashed #94a3b8;
+            padding: 1rem;
+            border-radius: 8px;
+            resize: vertical;
+            white-space: pre;
+            overflow-x: auto;
+        }
+
+        .columns-guide {
+            background-color: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+            padding: 0.85rem 1rem;
+            margin-bottom: 1rem;
+            font-size: 0.88rem;
+            color: #1e3a8a;
+        }
+
+        .columns-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin-top: 0.5rem;
+        }
+
+        .badge-col {
+            background-color: #dbeafe;
+            color: #1e40af;
+            font-weight: 700;
+            padding: 0.25rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            border: 1px solid #93c5fd;
+        }
+
+        .preview-table-wrapper {
+            margin-top: 1.25rem;
+            overflow-x: auto;
+            max-height: 300px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+        }
+
+        table.preview-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        table.preview-table th {
+            background-color: #f1f5f9;
+            color: #334155;
+            font-weight: 700;
+            text-align: left;
+            padding: 0.6rem;
+            border-bottom: 2px solid #cbd5e1;
+            position: sticky;
+            top: 0;
+        }
+
+        table.preview-table td {
+            padding: 0.55rem 0.6rem;
+            border-bottom: 1px solid #e2e8f0;
+            color: #1f2937;
+        }
+
+        .status-count {
+            margin-top: 0.85rem;
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 0.95rem;
+        }
+
         .actions {
             display: flex;
             gap: 0.75rem;
@@ -180,7 +297,7 @@
         }
 
         .btn {
-            padding: 0.8rem 1rem;
+            padding: 0.85rem 1.2rem;
             border: none;
             border-radius: 8px;
             font-size: 0.95rem;
@@ -188,7 +305,7 @@
             cursor: pointer;
             transition: all 0.2s;
             flex: 1;
-            min-width: 140px;
+            min-width: 160px;
             text-align: center;
         }
 
@@ -228,24 +345,32 @@
             top: 0;
         }
 
-        #pdf-content {
+        .pdf-page {
             width: 210mm;
-            min-height: 290mm;
-            padding: 18mm 22mm;
+            height: 296mm;
+            padding: 16mm 22mm;
             background: #ffffff;
             color: #000000;
             font-family: Arial, Helvetica, sans-serif;
             font-size: 11.5pt;
-            line-height: 1.55;
+            line-height: 1.5;
+            box-sizing: border-box;
+            page-break-after: always;
+            break-after: page;
+        }
+
+        .pdf-page:last-child {
+            page-break-after: auto;
+            break-after: auto;
         }
 
         .pdf-header {
             text-align: center;
-            margin-bottom: 18px;
+            margin-bottom: 16px;
         }
 
         .pdf-header img {
-            max-height: 85px;
+            max-height: 80px;
             width: auto;
             object-fit: contain;
         }
@@ -266,32 +391,32 @@
             text-align: center;
             font-size: 12.5pt;
             font-weight: bold;
-            margin: 14px 0 24px 0;
+            margin: 12px 0 22px 0;
             text-decoration: underline;
         }
 
         .pdf-section-title {
             font-weight: bold;
             text-decoration: underline;
-            margin-top: 20px;
-            margin-bottom: 10px;
+            margin-top: 18px;
+            margin-bottom: 8px;
             font-size: 11.5pt;
         }
 
         .pdf-field {
-            margin-bottom: 8px;
+            margin-bottom: 7px;
         }
 
         .pdf-justificativa {
             white-space: pre-wrap;
             text-align: justify;
-            margin-bottom: 14px;
-            min-height: 40px;
+            margin-bottom: 12px;
+            min-height: 36px;
         }
 
         .pdf-valor {
-            margin-top: 10px;
-            margin-bottom: 16px;
+            margin-top: 8px;
+            margin-bottom: 14px;
         }
 
         .pdf-tutorial-link {
@@ -299,19 +424,19 @@
             font-weight: bold;
             color: #1155cc;
             text-decoration: underline;
-            margin: 4px 0 8px 0;
+            margin: 4px 0 6px 0;
         }
 
         .pdf-aviso {
             font-size: 10.5pt;
             margin-top: 4px;
-            margin-bottom: 40px;
+            margin-bottom: 35px;
         }
 
         .pdf-assinatura {
-            margin-top: 45px;
+            margin-top: 40px;
             text-align: left;
-            width: 75%;
+            width: 80%;
         }
 
         .pdf-assinatura-titulo {
@@ -327,13 +452,13 @@
         .pdf-assinatura-linha {
             border-top: 1.5px solid #000000;
             width: 100%;
-            margin-bottom: 18px;
+            margin-bottom: 16px;
         }
 
         .pdf-rodape-institucional {
             font-weight: bold;
             font-style: italic;
-            font-size: 11pt;
+            font-size: 10.5pt;
             line-height: 1.45;
             color: #000000;
         }
@@ -347,10 +472,21 @@
 
     <header>
         <h1>Devolução - DAE</h1>
-        <p>Preencha os dados abaixo para compilar e gerar o documento oficial</p>
+        <p>Escolha a forma de preenchimento para gerar os documentos em Word (.docx) ou PDF</p>
     </header>
 
-    <div class="grid-container">
+    <!-- Botões de Escolha de Modo -->
+    <div class="mode-selector">
+        <button type="button" id="btnModeManual" class="btn-mode" onclick="selecionarModo('manual')">
+            Preenchimento Manual
+        </button>
+        <button type="button" id="btnModePlanilha" class="btn-mode" onclick="selecionarModo('planilha')">
+            Preenchimento via Planilha
+        </button>
+    </div>
+
+    <!-- MODO 1: PREENCHIMENTO MANUAL -->
+    <div id="areaManual" class="grid-container section-hidden">
         <!-- Coluna 1: Formulário de Entrada -->
         <div class="card">
             <h2>1. Preenchimento das Informações</h2>
@@ -404,65 +540,96 @@
         <div class="card">
             <h2>2. Texto Compilado & Geração de Arquivo</h2>
             <p style="font-size: 0.85rem; color: #475569; margin-bottom: 0.75rem;">
-                O texto abaixo é atualizado automaticamente. Você pode editar na caixa antes de gerar o Word (.docx) oficial ou o PDF.
+                O texto abaixo é atualizado automaticamente. Você pode editar na caixa antes de gerar o Word (.docx) ou PDF.
             </p>
 
             <textarea id="textoCompilado" class="compiled-box"></textarea>
 
             <div class="actions">
                 <button type="button" class="btn btn-clear" onclick="limparCampos()">Limpar</button>
-                <button type="button" class="btn btn-docx" onclick="gerarDOCX()">Baixar Word (.docx)</button>
-                <button type="button" class="btn btn-pdf" onclick="gerarPDF()">Baixar PDF</button>
+                <button type="button" class="btn btn-docx" onclick="baixarManualDOCX()">Baixar Word (.docx)</button>
+                <button type="button" class="btn btn-pdf" onclick="baixarManualPDF()">Baixar PDF</button>
             </div>
         </div>
     </div>
 
-    <!-- Estrutura oculta formatada fielmente ao documento para PDF -->
-    <div id="pdf-wrapper">
-        <div id="pdf-content">
-            <div class="pdf-header">
-                <img src="brasao-seduc.png" alt="Governo do Estado do Ceará - Secretaria da Educação" onerror="this.style.display='none'; document.getElementById('header-fallback').style.display='block';">
-                <div id="header-fallback" class="pdf-header-fallback" style="display: none;">
-                    <div class="gov-title">CEARÁ</div>
-                    <div class="sec-title">GOVERNO DO ESTADO<br>SECRETARIA DA EDUCAÇÃO</div>
+    <!-- MODO 2: PREENCHIMENTO VIA PLANILHA -->
+    <div id="areaPlanilha" class="section-hidden">
+        <div class="card">
+            <h2>Importação em Lote via Planilha (Excel / Google Sheets)</h2>
+            
+            <div class="columns-guide">
+                <strong>Instruções:</strong> Selecione e copie as linhas da sua planilha (com ou sem cabeçalho) e cole na caixa abaixo. Ordem esperada das colunas:
+                <div class="columns-badges">
+                    <span class="badge-col">CREDE</span>
+                    <span class="badge-col">CPF</span>
+                    <span class="badge-col">MATRÍCULA</span>
+                    <span class="badge-col">CARGA HORÁRIA</span>
+                    <span class="badge-col">JUSTIFICATIVA</span>
+                    <span class="badge-col">VALOR</span>
+                    <span class="badge-col">TÉCNICO RESPONSÁVEL</span>
+                </div>
+                <div style="margin-top: 0.45rem; font-size: 0.82rem; color: #334155;">
+                    <em>* Caso sua planilha também tenha a coluna <strong>NOME COMPLETO</strong> após a matrícula (8 colunas), o sistema reconhece automaticamente.</em>
                 </div>
             </div>
 
-            <div class="pdf-doc-title">INFORMAÇÕES PARA DEVOLUÇÃO VIA DAE</div>
+            <textarea id="dadosPlanilha" class="sheet-paste-box" placeholder="Cole aqui as células copiadas da planilha (Ctrl+V)..." oninput="processarPlanilha()"></textarea>
 
-            <div class="pdf-section-title">* DADOS PESSOAIS</div>
-            <div class="pdf-field"><strong>CREDE:</strong> <span id="pdf-crede"></span></div>
-            <div class="pdf-field"><strong>CPF:</strong> <span id="pdf-cpf"></span></div>
-            <div class="pdf-field"><strong>MATRÍCULA:</strong> <span id="pdf-matricula"></span></div>
-            <div class="pdf-field"><strong>NOME:</strong> <span id="pdf-nome"></span></div>
-            <div class="pdf-field"><strong>CARGA HORÁRIA:</strong> <span id="pdf-ch"></span></div>
+            <div id="statusPlanilha" class="status-count">Nenhum registro colado ainda.</div>
 
-            <div class="pdf-section-title">* JUSTIFICATIVA</div>
-            <div class="pdf-justificativa" id="pdf-justificativa"></div>
-            <div class="pdf-valor"><strong>VALOR:</strong> <span id="pdf-valor"></span></div>
-
-            <div class="pdf-section-title">* LINK PARA TUTORIAL PARA EMISSÃO DE DAE</div>
-            <div>
-                <a href="https://drive.google.com/open?id=1uPJp2AicqaN9HvGvKCAlfH5Co7fw1xX5" class="pdf-tutorial-link" target="_blank">TUTORIAL</a>
+            <div id="previewWrapper" class="preview-table-wrapper section-hidden">
+                <table class="preview-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>CREDE</th>
+                            <th>CPF</th>
+                            <th>MATRÍCULA</th>
+                            <th>NOME</th>
+                            <th>CH</th>
+                            <th>VALOR</th>
+                            <th>TÉCNICO</th>
+                        </tr>
+                    </thead>
+                    <tbody id="previewBody"></tbody>
+                </table>
             </div>
-            <div class="pdf-aviso">
-                <strong>IMPORTANTE: Acesso apenas com e-mail institucional <span style="color: #1155cc; text-decoration: underline;">@seduc.ce.gov.br</span> ou @prof.ce.gov.br</strong>
-            </div>
 
-            <div class="pdf-assinatura">
-                <div class="pdf-assinatura-titulo">Assinatura do responsável pela informação</div>
-                <div class="pdf-assinatura-tecnico" id="pdf-tecnico"></div>
-                <div class="pdf-assinatura-linha"></div>
-                <div class="pdf-rodape-institucional">
-                    Secretaria da Educação do Estado do Ceará – SEDUC<br>
-                    Coordenadoria de Gestão de Pessoas – COGEP<br>
-                    Célula de Folha de Pagamento – CEFOP
-                </div>
+            <div class="actions">
+                <button type="button" class="btn btn-clear" onclick="limparPlanilha()">Limpar</button>
+                <button type="button" class="btn btn-docx" onclick="baixarLoteDOCX()">Baixar Word Único (.docx)</button>
+                <button type="button" class="btn btn-pdf" onclick="baixarLotePDF()">Baixar PDF Único</button>
             </div>
         </div>
     </div>
+
+    <!-- Container oculto onde as páginas A4 são renderizadas para o PDF -->
+    <div id="pdf-wrapper"></div>
 
     <script>
+        let registrosLote = [];
+
+        function selecionarModo(modo) {
+            const btnManual = document.getElementById('btnModeManual');
+            const btnPlanilha = document.getElementById('btnModePlanilha');
+            const areaManual = document.getElementById('areaManual');
+            const areaPlanilha = document.getElementById('areaPlanilha');
+
+            if (modo === 'manual') {
+                btnManual.classList.add('active');
+                btnPlanilha.classList.remove('active');
+                areaManual.classList.remove('section-hidden');
+                areaPlanilha.classList.add('section-hidden');
+                atualizarCompilado();
+            } else {
+                btnPlanilha.classList.add('active');
+                btnManual.classList.remove('active');
+                areaPlanilha.classList.remove('section-hidden');
+                areaManual.classList.add('section-hidden');
+            }
+        }
+
         function mascaraCPF(campo) {
             let v = campo.value.replace(/\D/g, "");
             v = v.replace(/(\d{3})(\d)/, "$1.$2");
@@ -537,7 +704,7 @@ Célula de Folha de Pagamento – CEFOP`;
             atualizarCompilado();
         }
 
-        function obterDadosExtraidos() {
+        function obterDadosManual() {
             const textoAtual = document.getElementById('textoCompilado').value;
 
             const extrairLinha = (chave) => {
@@ -556,7 +723,7 @@ Célula de Folha de Pagamento – CEFOP`;
                 return match ? match[1].trim() : document.getElementById('tecnico').value.trim().toUpperCase();
             };
 
-            return {
+            return [{
                 CREDE: extrairLinha('CREDE'),
                 CPF: extrairLinha('CPF'),
                 MATRICULA: extrairLinha('MATRÍCULA'),
@@ -565,55 +732,432 @@ Célula de Folha de Pagamento – CEFOP`;
                 JUSTIFICATIVA: extrairJustificativa(),
                 VALOR: extrairLinha('VALOR'),
                 TECNICO: extrairTecnico()
-            };
+            }];
         }
 
-        async function gerarDOCX() {
-            try {
-                const response = await fetch('DEVOLUCAO-DAE.docx');
-                if (!response.ok) {
-                    throw new Error('Não foi possível encontrar o arquivo DEVOLUCAO-DAE.docx na pasta DAE.');
+        /* Processamento de colagem de planilha (suporta células com quebras de linha entre aspas) */
+        function parseTSV(texto) {
+            const linhas = [];
+            let linhaAtual = [];
+            let celulaAtual = '';
+            let dentroAspas = false;
+
+            for (let i = 0; i < texto.length; i++) {
+                const char = texto[i];
+                const proxChar = texto[i + 1];
+
+                if (char === '"') {
+                    if (dentroAspas && proxChar === '"') {
+                        celulaAtual += '"';
+                        i++;
+                    } else {
+                        dentroAspas = !dentroAspas;
+                    }
+                } else if (char === '\t' && !dentroAspas) {
+                    linhaAtual.push(celulaAtual.trim());
+                    celulaAtual = '';
+                } else if ((char === '\n' || (char === '\r' && proxChar === '\n')) && !dentroAspas) {
+                    if (char === '\r') i++;
+                    linhaAtual.push(celulaAtual.trim());
+                    if (linhaAtual.some(c => c !== '')) {
+                        linhas.push(linhaAtual);
+                    }
+                    linhaAtual = [];
+                    celulaAtual = '';
+                } else {
+                    celulaAtual += char;
                 }
-                const arrayBuffer = await response.arrayBuffer();
-                const zip = new PizZip(arrayBuffer);
-                
-                const doc = new window.docxtemplater(zip, {
-                    paragraphLoop: true,
-                    linebreaks: true,
-                    delimiters: { start: '{{', end: '}}' }
-                });
-
-                const dados = obterDadosExtraidos();
-                doc.render(dados);
-
-                const out = doc.getZip().generate({
-                    type: 'blob',
-                    mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-                });
-
-                const nomeServidor = dados.NOME || 'SERVIDOR';
-                saveAs(out, `Devolucao_DAE_${nomeServidor.replace(/\s+/g, '_')}.docx`);
-            } catch (erro) {
-                console.error(erro);
-                alert('Erro ao gerar o arquivo Word (.docx): ' + erro.message + '\n\nCertifique-se de que o arquivo DEVOLUCAO-DAE.docx está na pasta DAE e que a página está sendo acessada via GitHub Pages (servidor web).');
             }
+
+            if (celulaAtual !== '' || linhaAtual.length > 0) {
+                linhaAtual.push(celulaAtual.trim());
+                if (linhaAtual.some(c => c !== '')) {
+                    linhas.push(linhaAtual);
+                }
+            }
+
+            return linhas;
         }
 
-        function gerarPDF() {
-            const dados = obterDadosExtraidos();
-            const nomeServidor = dados.NOME || 'SERVIDOR';
+        function processarPlanilha() {
+            const texto = document.getElementById('dadosPlanilha').value;
+            const statusEl = document.getElementById('statusPlanilha');
+            const previewWrapper = document.getElementById('previewWrapper');
+            const previewBody = document.getElementById('previewBody');
 
-            document.getElementById('pdf-crede').textContent = dados.CREDE;
-            document.getElementById('pdf-cpf').textContent = dados.CPF;
-            document.getElementById('pdf-matricula').textContent = dados.MATRICULA;
-            document.getElementById('pdf-nome').textContent = dados.NOME;
-            document.getElementById('pdf-ch').textContent = dados.CH;
-            document.getElementById('pdf-justificativa').textContent = dados.JUSTIFICATIVA;
-            document.getElementById('pdf-valor').textContent = dados.VALOR;
-            document.getElementById('pdf-tecnico').textContent = dados.TECNICO;
+            registrosLote = [];
+            previewBody.innerHTML = '';
 
-            const elemento = document.getElementById('pdf-content');
-            const nomeArquivo = `Devolucao_DAE_${nomeServidor.replace(/\s+/g, '_')}.pdf`;
+            if (!texto.trim()) {
+                statusEl.textContent = 'Nenhum registro colado ainda.';
+                previewWrapper.classList.add('section-hidden');
+                return;
+            }
+
+            const linhas = parseTSV(texto);
+
+            linhas.forEach((cols, idx) => {
+                // Ignora linha de cabeçalho caso tenha sido copiada junto
+                const primeiraCol = (cols[0] || '').toUpperCase();
+                const segundaCol = (cols[1] || '').toUpperCase();
+                if (idx === 0 && (primeiraCol === 'CREDE' || segundaCol === 'CPF')) {
+                    return;
+                }
+
+                // Se tiver 8 colunas ou mais, assume que a 4ª coluna é NOME COMPLETO
+                if (cols.length >= 8) {
+                    registrosLote.push({
+                        CREDE: cols[0] || '',
+                        CPF: cols[1] || '',
+                        MATRICULA: cols[2] || '',
+                        NOME: (cols[3] || '').toUpperCase(),
+                        CH: cols[4] || '',
+                        JUSTIFICATIVA: cols[5] || '',
+                        VALOR: cols[6] || '',
+                        TECNICO: (cols[7] || '').toUpperCase()
+                    });
+                } else {
+                    // Padrão de 7 colunas: CREDE, CPF, MATRÍCULA, CARGA HORÁRIA, JUSTIFICATIVA, VALOR, TÉCNICO
+                    registrosLote.push({
+                        CREDE: cols[0] || '',
+                        CPF: cols[1] || '',
+                        MATRICULA: cols[2] || '',
+                        NOME: '',
+                        CH: cols[3] || '',
+                        JUSTIFICATIVA: cols[4] || '',
+                        VALOR: cols[5] || '',
+                        TECNICO: (cols[6] || '').toUpperCase()
+                    });
+                }
+            });
+
+            if (registrosLote.length === 0) {
+                statusEl.textContent = 'Nenhum registro válido identificado.';
+                previewWrapper.classList.add('section-hidden');
+                return;
+            }
+
+            statusEl.textContent = `✔ ${registrosLote.length} registro(s) pronto(s) para gerar (${registrosLote.length} página(s)).`;
+            previewWrapper.classList.remove('section-hidden');
+
+            registrosLote.forEach((reg, i) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${i + 1}</strong></td>
+                    <td>${reg.CREDE}</td>
+                    <td>${reg.CPF}</td>
+                    <td>${reg.MATRICULA}</td>
+                    <td>${reg.NOME || '-'}</td>
+                    <td>${reg.CH}</td>
+                    <td>${reg.VALOR}</td>
+                    <td>${reg.TECNICO}</td>
+                `;
+                previewBody.appendChild(tr);
+            });
+        }
+
+        function limparPlanilha() {
+            document.getElementById('dadosPlanilha').value = '';
+            processarPlanilha();
+        }
+
+        /* GERAÇÃO DE WORD (.DOCX) MULTIPÁGINAS 100% PELO CÓDIGO */
+        async function gerarDocumentoWord(listaRegistros, nomeArquivo) {
+            if (!listaRegistros || listaRegistros.length === 0) {
+                alert('Preencha ou cole pelo menos um registro antes de baixar.');
+                return;
+            }
+
+            const { Document, Packer, Paragraph, TextRun, AlignmentType, ExternalHyperlink, UnderlineType, PageBreak } = docx;
+
+            const children = [];
+
+            listaRegistros.forEach((dados, index) => {
+                // Quebra de página antes de cada novo servidor (a partir do 2º)
+                if (index > 0) {
+                    children.push(new Paragraph({ children: [new PageBreak()] }));
+                }
+
+                // Cabeçalho Institucional
+                children.push(
+                    new Paragraph({
+                        alignment: AlignmentType.CENTER,
+                        spacing: { after: 40 },
+                        children: [
+                            new TextRun({ text: "CEARÁ", bold: true, size: 28, font: "Arial", color: "14532D" })
+                        ]
+                    }),
+                    new Paragraph({
+                        alignment: AlignmentType.CENTER,
+                        spacing: { after: 20 },
+                        children: [
+                            new TextRun({ text: "GOVERNO DO ESTADO", bold: true, size: 22, font: "Arial", color: "334155" })
+                        ]
+                    }),
+                    new Paragraph({
+                        alignment: AlignmentType.CENTER,
+                        spacing: { after: 240 },
+                        children: [
+                            new TextRun({ text: "SECRETARIA DA EDUCAÇÃO", bold: true, size: 20, font: "Arial", color: "475569" })
+                        ]
+                    }),
+                    // Título do Documento
+                    new Paragraph({
+                        alignment: AlignmentType.CENTER,
+                        spacing: { after: 280 },
+                        children: [
+                            new TextRun({
+                                text: "INFORMAÇÕES PARA DEVOLUÇÃO VIA DAE",
+                                bold: true,
+                                underline: { type: UnderlineType.SINGLE },
+                                size: 25,
+                                font: "Arial"
+                            })
+                        ]
+                    }),
+                    // Seção Dados Pessoais
+                    new Paragraph({
+                        spacing: { before: 120, after: 140 },
+                        children: [
+                            new TextRun({
+                                text: "* DADOS PESSOAIS",
+                                bold: true,
+                                underline: { type: UnderlineType.SINGLE },
+                                size: 23,
+                                font: "Arial"
+                            })
+                        ]
+                    }),
+                    new Paragraph({
+                        spacing: { after: 100 },
+                        children: [
+                            new TextRun({ text: "CREDE: ", bold: true, size: 23, font: "Arial" }),
+                            new TextRun({ text: dados.CREDE, size: 23, font: "Arial" })
+                        ]
+                    }),
+                    new Paragraph({
+                        spacing: { after: 100 },
+                        children: [
+                            new TextRun({ text: "CPF: ", bold: true, size: 23, font: "Arial" }),
+                            new TextRun({ text: dados.CPF, size: 23, font: "Arial" })
+                        ]
+                    }),
+                    new Paragraph({
+                        spacing: { after: 100 },
+                        children: [
+                            new TextRun({ text: "MATRÍCULA: ", bold: true, size: 23, font: "Arial" }),
+                            new TextRun({ text: dados.MATRICULA, size: 23, font: "Arial" })
+                        ]
+                    }),
+                    new Paragraph({
+                        spacing: { after: 100 },
+                        children: [
+                            new TextRun({ text: "NOME: ", bold: true, size: 23, font: "Arial" }),
+                            new TextRun({ text: dados.NOME, size: 23, font: "Arial" })
+                        ]
+                    }),
+                    new Paragraph({
+                        spacing: { after: 200 },
+                        children: [
+                            new TextRun({ text: "CARGA HORÁRIA: ", bold: true, size: 23, font: "Arial" }),
+                            new TextRun({ text: dados.CH, size: 23, font: "Arial" })
+                        ]
+                    }),
+                    // Seção Justificativa
+                    new Paragraph({
+                        spacing: { before: 120, after: 140 },
+                        children: [
+                            new TextRun({
+                                text: "* JUSTIFICATIVA",
+                                bold: true,
+                                underline: { type: UnderlineType.SINGLE },
+                                size: 23,
+                                font: "Arial"
+                            })
+                        ]
+                    }),
+                    new Paragraph({
+                        alignment: AlignmentType.JUSTIFIED,
+                        spacing: { after: 180 },
+                        children: [
+                            new TextRun({ text: dados.JUSTIFICATIVA, size: 23, font: "Arial" })
+                        ]
+                    }),
+                    new Paragraph({
+                        spacing: { after: 240 },
+                        children: [
+                            new TextRun({ text: "VALOR: ", bold: true, size: 23, font: "Arial" }),
+                            new TextRun({ text: dados.VALOR, size: 23, font: "Arial" })
+                        ]
+                    }),
+                    // Seção Tutorial
+                    new Paragraph({
+                        spacing: { before: 120, after: 120 },
+                        children: [
+                            new TextRun({
+                                text: "* LINK PARA TUTORIAL PARA EMISSÃO DE DAE",
+                                bold: true,
+                                underline: { type: UnderlineType.SINGLE },
+                                size: 23,
+                                font: "Arial"
+                            })
+                        ]
+                    }),
+                    new Paragraph({
+                        spacing: { after: 100 },
+                        children: [
+                            new ExternalHyperlink({
+                                children: [
+                                    new TextRun({
+                                        text: "TUTORIAL",
+                                        bold: true,
+                                        color: "1155CC",
+                                        underline: { type: UnderlineType.SINGLE },
+                                        size: 23,
+                                        font: "Arial"
+                                    })
+                                ],
+                                link: "https://drive.google.com/open?id=1uPJp2AicqaN9HvGvKCAlfH5Co7fw1xX5"
+                            })
+                        ]
+                    }),
+                    new Paragraph({
+                        spacing: { after: 450 },
+                        children: [
+                            new TextRun({
+                                text: "IMPORTANTE: Acesso apenas com e-mail institucional ",
+                                bold: true,
+                                size: 21,
+                                font: "Arial"
+                            }),
+                            new TextRun({
+                                text: "@seduc.ce.gov.br",
+                                bold: true,
+                                color: "1155CC",
+                                underline: { type: UnderlineType.SINGLE },
+                                size: 21,
+                                font: "Arial"
+                            }),
+                            new TextRun({
+                                text: " ou @prof.ce.gov.br",
+                                bold: true,
+                                size: 21,
+                                font: "Arial"
+                            })
+                        ]
+                    }),
+                    // Assinatura
+                    new Paragraph({
+                        spacing: { after: 240 },
+                        children: [
+                            new TextRun({ text: "Assinatura do responsável pela informação", size: 23, font: "Arial" })
+                        ]
+                    }),
+                    new Paragraph({
+                        spacing: { after: 40 },
+                        children: [
+                            new TextRun({ text: dados.TECNICO, size: 23, font: "Arial" })
+                        ]
+                    }),
+                    new Paragraph({
+                        spacing: { after: 220 },
+                        children: [
+                            new TextRun({ text: "_______________________________________________________", bold: true, size: 23, font: "Arial" })
+                        ]
+                    }),
+                    // Rodapé Institucional
+                    new Paragraph({
+                        spacing: { after: 40 },
+                        children: [
+                            new TextRun({ text: "Secretaria da Educação do Estado do Ceará – SEDUC", bold: true, italics: true, size: 21, font: "Arial" })
+                        ]
+                    }),
+                    new Paragraph({
+                        spacing: { after: 40 },
+                        children: [
+                            new TextRun({ text: "Coordenadoria de Gestão de Pessoas – COGEP", bold: true, italics: true, size: 21, font: "Arial" })
+                        ]
+                    }),
+                    new Paragraph({
+                        spacing: { after: 40 },
+                        children: [
+                            new TextRun({ text: "Célula de Folha de Pagamento – CEFOP", bold: true, italics: true, size: 21, font: "Arial" })
+                        ]
+                    })
+                );
+            });
+
+            const doc = new Document({
+                sections: [{
+                    properties: {
+                        page: {
+                            margin: { top: 1000, right: 1100, bottom: 1000, left: 1100 }
+                        }
+                    },
+                    children: children
+                }]
+            });
+
+            const blob = await Packer.toBlob(doc);
+            saveAs(blob, nomeArquivo);
+        }
+
+        /* GERAÇÃO DE PDF MULTIPÁGINAS */
+        function gerarDocumentoPDF(listaRegistros, nomeArquivo) {
+            if (!listaRegistros || listaRegistros.length === 0) {
+                alert('Preencha ou cole pelo menos um registro antes de baixar.');
+                return;
+            }
+
+            const wrapper = document.getElementById('pdf-wrapper');
+            wrapper.innerHTML = '';
+
+            listaRegistros.forEach((dados) => {
+                const page = document.createElement('div');
+                page.className = 'pdf-page';
+                page.innerHTML = `
+                    <div class="pdf-header">
+                        <img src="brasao-seduc.png" alt="Governo do Estado do Ceará - Secretaria da Educação" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                        <div class="pdf-header-fallback" style="display: none;">
+                            <div class="gov-title">CEARÁ</div>
+                            <div class="sec-title">GOVERNO DO ESTADO<br>SECRETARIA DA EDUCAÇÃO</div>
+                        </div>
+                    </div>
+
+                    <div class="pdf-doc-title">INFORMAÇÕES PARA DEVOLUÇÃO VIA DAE</div>
+
+                    <div class="pdf-section-title">* DADOS PESSOAIS</div>
+                    <div class="pdf-field"><strong>CREDE:</strong> ${dados.CREDE}</div>
+                    <div class="pdf-field"><strong>CPF:</strong> ${dados.CPF}</div>
+                    <div class="pdf-field"><strong>MATRÍCULA:</strong> ${dados.MATRICULA}</div>
+                    <div class="pdf-field"><strong>NOME:</strong> ${dados.NOME}</div>
+                    <div class="pdf-field"><strong>CARGA HORÁRIA:</strong> ${dados.CH}</div>
+
+                    <div class="pdf-section-title">* JUSTIFICATIVA</div>
+                    <div class="pdf-justificativa">${dados.JUSTIFICATIVA}</div>
+                    <div class="pdf-valor"><strong>VALOR:</strong> ${dados.VALOR}</div>
+
+                    <div class="pdf-section-title">* LINK PARA TUTORIAL PARA EMISSÃO DE DAE</div>
+                    <div>
+                        <a href="https://drive.google.com/open?id=1uPJp2AicqaN9HvGvKCAlfH5Co7fw1xX5" class="pdf-tutorial-link" target="_blank">TUTORIAL</a>
+                    </div>
+                    <div class="pdf-aviso">
+                        <strong>IMPORTANTE: Acesso apenas com e-mail institucional <span style="color: #1155cc; text-decoration: underline;">@seduc.ce.gov.br</span> ou @prof.ce.gov.br</strong>
+                    </div>
+
+                    <div class="pdf-assinatura">
+                        <div class="pdf-assinatura-titulo">Assinatura do responsável pela informação</div>
+                        <div class="pdf-assinatura-tecnico">${dados.TECNICO}</div>
+                        <div class="pdf-assinatura-linha"></div>
+                        <div class="pdf-rodape-institucional">
+                            Secretaria da Educação do Estado do Ceará – SEDUC<br>
+                            Coordenadoria de Gestão de Pessoas – COGEP<br>
+                            Célula de Folha de Pagamento – CEFOP
+                        </div>
+                    </div>
+                `;
+                wrapper.appendChild(page);
+            });
 
             const opcoes = {
                 margin: 0,
@@ -621,13 +1165,32 @@ Célula de Folha de Pagamento – CEFOP`;
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { scale: 2, useCORS: true },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak: { mode: ['css', 'legacy'] },
                 enableLinks: true
             };
 
-            html2pdf().set(opcoes).from(elemento).save();
+            html2pdf().set(opcoes).from(wrapper).save();
         }
 
-        window.onload = atualizarCompilado;
+        function baixarManualDOCX() {
+            const lista = obterDadosManual();
+            const nome = (lista[0].NOME || 'SERVIDOR').replace(/\s+/g, '_');
+            gerarDocumentoWord(lista, `Devolucao_DAE_${nome}.docx`);
+        }
+
+        function baixarManualPDF() {
+            const lista = obterDadosManual();
+            const nome = (lista[0].NOME || 'SERVIDOR').replace(/\s+/g, '_');
+            gerarDocumentoPDF(lista, `Devolucao_DAE_${nome}.pdf`);
+        }
+
+        function baixarLoteDOCX() {
+            gerarDocumentoWord(registrosLote, `Devolucao_DAE_Lote_${registrosLote.length}_Servidores.docx`);
+        }
+
+        function baixarLotePDF() {
+            gerarDocumentoPDF(registrosLote, `Devolucao_DAE_Lote_${registrosLote.length}_Servidores.pdf`);
+        }
     </script>
 </body>
 </html>
